@@ -1,0 +1,136 @@
+﻿@{
+    Layout = "~/_siteLayout.cshtml";
+    Page.Title = "Contact";
+
+    var fromEmail = Request.Form["fromEmail"];
+    var message = Request.Form["EmailMsg"];
+    var subject = Request.Form["subject"];
+    
+    if(IsPost )
+    {
+        try
+        {
+        
+        WebMail.Send(
+            to: "rbahirathan@gmail.com",from:fromEmail,
+                               subject: subject,
+                               body: message
+                           );
+        }
+        catch(Exception ex)
+        {
+
+            Response.Write("<script type='text/javascript'>alert(" + ex.Message + ");</script>");
+        
+        
+        }
+    
+    }
+    
+    
+    
+    }
+
+
+@section featured {
+    <section class="featured">
+        <div class="content-wrapper">
+            <hgroup class="title">
+                <h1>@Page.Title.</h1>
+                <h2><i><b>fashionstore.lk</b></i></h2>
+            </hgroup>
+        </div>
+    </section>
+}
+<form method="post">
+<section class="contact">
+    <header>
+        <h3>Phone:</h3>
+    </header>
+    <p>
+        <span class="label">Main:</span>
+        <span>+94112500000</span>
+    </p>
+    <p>
+        <span class="label">After Hours:</span>
+        <span>+94773098973</span>
+    </p>
+</section>
+
+<section class="contact">
+    <header>
+        <h3>Email:</h3>
+    </header>
+    <p>
+        <span class="label">Support:</span>
+        <span><a href="mailto:Support@fahionstore.com">Support@fahionstore.com</a></span>
+    </p>
+    <p>
+        <span class="label">Marketing:</span>
+        <span><a href="mailto:Marketing@fahionstore.com">Marketing@fahionstore.com</a></span>
+    </p>
+    <p>
+        <span class="label">General:</span>
+        <span><a href="mailto:General@fahionstore.com">General@fahionstore.com</a></span>
+    </p>
+  </section >
+<section class="contact">
+    <header>
+        <h3>Address:</h3>
+    </header>
+    <p>
+        FashionStore.lk<br />
+        Galle Road Colombo-06
+        Sri Lanka
+    </p>
+</section>
+
+<section class="contact">
+    <table>
+        <tr>
+            <td>
+                <p><span class="label">Send your comments and suggestion</span></p>
+            </td>
+        </tr>
+             <tr>
+            <td>
+                <p>
+                    <label>From</label>
+                   <input type="text" aria-multiline="true" id="fromEmail" name="fromEmail" style="width:250px;height:10px;" />
+               
+                </p>
+            </td>
+        </tr>
+     <tr>
+            <td>
+                <p>
+                    <label>Subject</label>
+                      <input type="text"  id="subject" name="subject" style="width:250px;height:10px;" />
+                </p>
+            </td>
+        </tr>
+         <tr>
+            <td>
+                <p>
+                    <label>Message</label>
+                   <input type="text" aria-multiline="true" id="EmailMsg"   name="EmailMsg" style="width:250px; height:100px;" />
+               
+                </p>
+            </td>
+        </tr>
+       
+        <tr>
+            <td>
+            </td>
+        </tr>
+
+
+    </table>
+
+</section>
+
+        <p>
+                    <input type="submit" value="Send" />
+                </p>
+    </form>
+        

@@ -1,0 +1,214 @@
+﻿@* Remove this section if you are using bundling *@
+@section Scripts {
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script type="text/javascript">
+       
+    </script>
+}
+
+@{
+    Layout = "~/_siteLayout.cshtml";
+    Page.Title = "Add Products";
+
+    // Initialize general page variables
+
+    var productname = "";
+    var unitprice = "";
+    var Size = "";
+    var Color = "";
+    var ImageUrl = "";
+    var quantity = "";
+    var categoryid = "";
+    var supplierid = "";
+    var discont = "";
+    var profit = 0;
+    var ms = new MemoryStream();
+    var SuppItems = new List<SelectListItem>();
+    var CatItems = new List<SelectListItem>();
+
+    // Validation for for the inputs of the product form 
+
+    // Validation for product name 
+    Validation.RequireField("productname", "You must specify the  Product name.");
+    Validation.Add("productname",
+        Validator.StringLength(
+            maxLength: Int32.MaxValue,
+            minLength: 2,
+            errorMessage: "product Name Cannot be empty"));
+    // Validation for quantity 
+    Validation.RequireField("quantity", "Enter quantity.");
+    Validation.Add("quantity",
+        Validator.Integer(errorMessage: "quantity required"));
+    // Validation for product unitprice  
+    Validation.RequireField("unitprice", "Enter Unit Price.");
+    Validation.Add("unitprice", Validator.Decimal(errorMessage: "Unit Price cannot be empty."));
+
+    Validation.RequireField("profitmargin", "Enter profit margin .");
+    Validation.Add("profitmargin", 
+        Validator.Decimal(errorMessage: "Unit Price cannot be empty."),
+        Validator.Range(0,100,    "must be between 0 and 100..." ));
+         
+
+    
+    
+    // Populating the dropdownlist with existing suppliers 
+    List<DAL.Suppliers> SuppliersRecords = DAL.Suppliers.getAllSuppliers();
+    if (SuppliersRecords != null)
+    {
+        SuppItems.Add(new SelectListItem { Text = "Select....", Value = "" });
+        foreach (var item in SuppliersRecords)
+        {
+            SuppItems.Add(new SelectListItem { Text = item.companyname, Value = Convert.ToString(item.supplierid) });
+        }
+    }
+    // Populating the dropdownlist with existing categories 
+    List<DAL.Category> CatRecords = DAL.Category.getCategoryRecodCollections();
+    if (SuppliersRecords != null)
+    {
+        foreach (var item in CatRecords)
+        {
+            CatItems.Add(new SelectListItem { Text = item.categoryname, Value = Convert.ToString(item.categoryid) });
+        }
+    }
+
+    if (IsPost)
+    {
+        AntiForgery.Validate();
+        if (Validation.IsValid())
+        {
+            // IF form is valid then form input values are assigned to page variables            
+            HttpPostedFileBase file = Request.Files["ImageUrl"];
+            productname = Request.Form["productname"];
+            unitprice = Request.Form["unitprice"];
+            Size = Request.Form["Size"];
+            Color = Request.Form["Color"];
+            var Image = Request.Form["img"];
+            //discont = Request.Form["discontinued"];
+            quantity = Request.Form["quantity"];
+            profit = int.Parse( Request.Form["profitmargin"].ToString());
+            categoryid = Request.Form["ddlCat"];
+            supplierid = Request.Form["ddlSupp"];
+            ImageUrl = file.FileName.ToString().Split('\\').Last();
+            //  string imagePath = AspControlUtil.getAppPath() + @"/" + ImageUrl;
+
+            string filePath = Server.MapPath("~/Images") + @"/" + ImageUrl; ;
+
+            if (!File.Exists(filePath))
+           {
+               File.Copy(file.FileName, filePath);  
+             
+           }
+
+            if(discont == null)
+            {
+                discont = "0";
+            }
+            
+            
+            // User inputs are insert to product table 
+            Products prd = new Products();
+            int result = Products.insert(productname, unitprice, ImageUrl, quantity, supplierid, categoryid, "0", profit, Size, Color);
+            if (result == 0)
+            {
+                string url = "~/ErrorPage?ErrorMessage=" + "Database Error Occured";
+                Response.Redirect(url);
+            }
+        }
+    }
+}
+
+ @section featured {
+    <section class="featured">
+        <div class="content-wrapper">
+            <hgroup class="title">
+                <h1>@Page.Title.</h1>
+                 <h2><i><b>fashionstore.lk</b></i></h2>
+            </hgroup>
+        </div>
+    </section>
+}
+
+
+<form method="post" enctype="multipart/form-data">
+    @AntiForgery.GetHtml()
+    @Html.ValidationSummary("Adding Products was unsuccessful. Please correct the errors and try again.", excludeFieldErrors: true, htmlAttributes: null)
+    <fieldset>
+        <legend>Registration Form</legend>
+        <ol>
+            <li class="productname">
+                <label for="productname" '@if (!ModelState.IsValidField("productname"))
+                                          {<text>class="error-label"</text>}'>
+                    Products Name
+                </label>
+                <input type="text" id="productname" name="productname"  '@Validation.For("productname")' />
+                @Html.ValidationMessage("productname")
+            </li>
+            <li class="unitprice">
+                <label for="unitprice" '@if (!ModelState.IsValidField("unitprice"))
+                                        {<text>class="error-label"</text>}'>
+                    Unit price</label>
+                <input type="text" id="unitprice" name="unitprice" '@Validation.For("unitprice")' />
+                @Html.ValidationMessage("unitprice")
+            </li>
+            <li class="Size">
+                <label for="Size" >
+                    Size
+                </label>
+                <input type="text" id="Size" name="Size"  />
+            
+            </li>
+            <li class="Color">
+                <label for="Color">
+                    Size
+                </label>
+                <input type="text" id="Color" name="Color" />
+            </li>
+               <li class="profitmargin">
+                <label for="profitmargin" '@if (!ModelState.IsValidField("profitmargin"))
+                                        {<text>class="error-label"</text>}'>
+                    Profit margin</label>
+                <input type="text" id="profitmargin" name="profitmargin" '@Validation.For("profitmargin")' /> <label>%</label>
+                @Html.ValidationMessage("profitmargin")
+            </li>
+            <li class="ImageUrl">
+                <label for="ImageUrl" '@if (!ModelState.IsValidField("ImageUrl"))
+                                       {<text>class="error-label"</text>}'>
+                    Image of the Products</label>
+            </li>
+            <li>
+                <input type="image" id="img" src="#" style="display: none" alt="your image" name="img" />
+            </li>
+            <li>
+                <input type='file' id="ImageUrl" name="ImageUrl" onchange="readURL(this);" />
+            </li>
+            <li class="quantity">
+                <label for="quantity" '@if (!ModelState.IsValidField("Quantity"))
+                                       {<text>class="error-label"</text>}'>
+                    Enter the quantity</label>
+                <input type="text" id="quantity" name="quantity" '@Validation.For("quantity")' />
+                @Html.ValidationMessage("Quantity")
+            </li>
+            <li>
+                <label>Select the category  </label>
+                @Html.DropDownList("ddlCat", @CatItems, @CatItems[0])
+                @Html.ValidationMessage("category")
+            </li>
+            <li class="supplierid">
+                <label for="supplierid" '@if (!ModelState.IsValidField("supplierid"))
+                                         {<text>  class="error-label"</text>}'>
+                    Choose Supplier</label>
+                @Html.DropDownList("ddlSupp", @SuppItems, @SuppItems[0])
+                @Html.ValidationMessage("supplierid")
+            </li>
+           
+            <li class="recaptcha"></li>
+        </ol>
+        <input type="submit" value="Add product" />
+    </fieldset>
+        <ul>
+            <li><a href="../../HomePage">Home</a></li>
+            <li><a href="../Admin">Admin</a></li>
+        </ul>
+
+</form>

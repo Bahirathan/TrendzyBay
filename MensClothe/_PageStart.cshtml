@@ -1,0 +1,22 @@
+﻿
+
+
+@{ 
+    Layout = "~/_siteLayout.cshtml";
+
+    ProfileCommon profile = HttpContext.Current.Profile as ProfileCommon;
+    PageData["SCart"] = profile.SCart;
+    PageData["itemCount"] = profile.SCart.Items.Count;
+    PageData["BaseCurrency"] = "LKR";
+    
+   // PageData["Shopping"]
+    //try
+    //{
+    //    RunPage();
+    //}
+    //catch (Exception ex)
+    //{
+    //    Response.Redirect("~/ErrorPage.cshtml?source=" +
+    //        HttpUtility.UrlEncode(Request.AppRelativeCurrentExecutionFilePath));
+    //} 
+}

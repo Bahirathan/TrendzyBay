@@ -1,0 +1,144 @@
+﻿@* Remove this section if you are using bundling *@
+@section Scripts {
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script type="text/javascript">
+
+    
+
+    </script>
+}
+
+@{
+    Layout = "~/_siteLayout.cshtml";
+    Page.Title = "Remove Products";
+
+
+    //Initialize page variables 
+    var items = new List<SelectListItem>();
+    var SuppItems = new List<SelectListItem>();
+    var CatItems = new List<SelectListItem>();
+    var i = 0;
+    Products prd = new Products();
+
+
+    List<Products> productRecords = Products.getProductModifyCollections();
+    if (productRecords != null)
+    {
+        items.Add(new SelectListItem { Text = "None", Value = "0" });
+        foreach (var item in productRecords)
+        {
+            items.Add(new SelectListItem { Text = item.name, Value = Convert.ToString(item.ItemID) });
+        }
+    }
+
+
+    // populate supplier for modification 
+
+    
+    // populate category list for modification 
+    
+
+    if (IsPost)
+    {
+        var DeleteConfirm = Request.Form["DeleteConfirm"].ToString();
+
+        if (!string.IsNullOrEmpty(DeleteConfirm) && Request.Form["ddlprd"] != null )
+        {
+            var productID = int.Parse(Request.Form["ddlprd"].ToString());
+            i = Products.DeleteProduct(productID.ToString());
+            if (i == 0)
+            {
+                string url = "~/ErrorPage?ErrorMessage=" + "Dabse Error Occured";
+                Response.Redirect(url);
+            }
+        }
+
+    }
+
+}
+
+@section featured {
+    <section class="featured">
+        <div class="content-wrapper">
+            <hgroup class="title">
+                <h1>@Page.Title.</h1>
+                <h2><i><b>fashionstore.lk</b></i></h2>
+            </hgroup>
+        </div>
+    </section>
+}
+
+<form method="post" enctype="multipart/form-data">
+    @AntiForgery.GetHtml()
+    @Html.ValidationSummary("Adding Products was unsuccessful. Please correct the errors and try again.", excludeFieldErrors: true, htmlAttributes: null)
+    <fieldset>
+        <legend>Registration Form</legend>
+        <ol>
+            <li class="Clothes">
+                <label>
+                    Select Products Item to be Deleted:
+                </label>
+                 <select id="ddlprd" name="ddlprd" onchange="selectProduct(this);">
+                    @foreach (var item in items)
+                    {
+                        <option   value="@item.Value" >
+                            @item.Text
+                        </option>
+                    }
+                </select>
+             @*   @Html.DropDownList("DDLid", items)*@
+            </li>
+        </ol>
+        <div id="detailform"  style="display:none;">
+            <ol>
+                <li class="Price">
+                    <label>
+                        Product Name</label>
+                    <input type="text" id="pname" name="pname" />
+                </li>
+                <li class="Price">
+                    <label>
+                        Price</label>
+                    <input type="text" id="Price" name="Price" />
+                </li>
+                <li class="quantity">
+                    <label for="quantity">
+                        Quantity</label>
+                    <input type="text" id="quantity" name="quantity"  />
+                </li>
+               <li >
+                <label for="profitmargin" >
+                    Profit margin</label>
+                <input type="text" id="Profitmargin" name="Profitmargin" /> <label>%</label>
+               </li>
+
+                <li class="ItemImage">
+                        <label for="ItemImage">
+                            Image
+                        </label>
+                        <img id="img" src="#"  alt="Red dot" width="100" height="150">  
+                </li>
+                <li>
+                    <label>Category  </label>
+                      <input type="text" id="ddlCat" name="ddlCat" />
+                </li>
+                <li class="supplierid">
+                    <label for="supplierid" >
+                       Choose Supplier</label>
+                      <input type="text" id="ddlSupp" name="ddlSupp" />
+                </li>
+                <li>
+                    <label>Check whether discontinued or not ?</label>
+                    <input type="checkbox" id="discontinued" value="1" name="discontinued" />
+                </li>
+                <li class="recaptcha"></li>
+            </ol>
+            <input type="submit" id="DeleteConfirm" name="DeleteConfirm" value="Confirm Delete" />
+        </div>
+    </fieldset>
+    <ul>
+        <li><a href="../../HomePage">Home</a></li>
+        <li><a href="../Admin">Admin</a></li>
+    </ul>
+</form>

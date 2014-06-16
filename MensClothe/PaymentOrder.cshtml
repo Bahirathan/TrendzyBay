@@ -1,0 +1,648 @@
+@using Zayko.Finance;
+
+@section Scripts {
+
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+   
+}
+
+@{
+    Page.Title = "Order Form";
+    Layout = "~/_siteLayout.cshtml";
+    
+
+    // Initializing the common page variables 
+    ProfileCommon profile = HttpContext.Current.Profile as ProfileCommon;
+    var SCart = (MensClothe.Cart)PageData["SCart"];
+    string amount = Convert.ToString(SCart.Total);
+    var CustomerDetails = new DAL.Customer();
+    var carddetails = new CCard();
+    bool PayPalReturnRequest = false;
+    DateTime deliverydate;
+    decimal deliveryCharge = 0;
+    decimal discount = 0.000M;
+    var paymentType = "";
+
+    if (IsPost)
+    {
+        paymentType = Request.Form["paymentType"].ToString();
+
+
+        // validation for user input variable for credit card and paypal payment type 
+      
+            Validation.RequireField("txtName", "Enter your Name.");
+            Validation.Add("txtName",
+                Validator.StringLength(
+                    maxLength: Int32.MaxValue,
+                    minLength: 2,
+                    errorMessage: "Name Cannot be empty"));
+
+
+            Validation.RequireField("txtAddress", "Enter your Address");
+            Validation.Add("txtAddress",
+                Validator.StringLength(
+                    maxLength: Int32.MaxValue,
+                    minLength: 6,
+                    errorMessage: "Enter detail address"));
+
+
+            Validation.RequireField("txtEmail", "Enter Email Address");
+            Validation.Add("txtEmail",
+              Validator.Regex(@"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$",
+              "Invalid format for an email address"));
+
+            Validation.RequireField("txtPhone", "Enter Phone Number");
+            Validation.Add("txtPhone",
+            Validator.StringLength(maxLength: Int32.MaxValue,
+                    minLength: 10, errorMessage: "Must be between 10 and 20"));
+
+
+
+          if (paymentType == "PP" || paymentType == "CC")
+           {
+        
+         Validation.RequireField("txtCity", "Enter city Name.");
+            Validation.Add("txtCity",
+                Validator.StringLength(
+                    maxLength: Int32.MaxValue,
+                    minLength: 6,
+                    errorMessage: "City name cannot empty."));
+
+          
+
+            Validation.RequireField("txtState", "Enter state.");
+            Validation.Add("txtState",
+                Validator.StringLength(
+                    maxLength: Int32.MaxValue,
+                    minLength: 6,
+                    errorMessage: "Province name cannot empty."));
+
+
+        
+
+            if (paymentType == "CC")
+            {
+            Validation.RequireField("txtCC", "Enter card number.");
+            Validation.Add("txtCC",
+                Validator.StringLength(
+                    maxLength: 16,
+                    minLength: 16,
+                    errorMessage: "Credit Card number must be 16 characters ."));
+
+            
+            //Validation.RequireField("txtSecurity", "Enter Security code");
+            Validation.Add("txtSecurity",
+                Validator.Required("Must be three numbers"));
+
+            }
+        }
+     
+
+        // amount = Request.Form["txtOrderAmount"].ToString();
+
+        OrderClass order = new OrderClass();
+        DAL.DbConnection dbCon = new DAL.DbConnection("ConnectionStr");
+
+
+        // check the validation and process the payment then redirecting to confirmation page or error page 
+        if (Validation.IsValid())
+        {
+            AntiForgery.Validate();
+            if (paymentType == "CC" || paymentType == "PP")
+            {
+                CustomerDetails = new DAL.Customer
+                {
+                    customername = Request.Form["txtName"].ToString(),
+                    Address = Request.Form["txtAddress"].ToString(),
+                    City = Request.Form["txtCity"].ToString(),
+                    Country = Request.Form["txtCountryId"].ToString(),
+                    Email = Request.Form["txtEmail"].ToString(),
+                    phone = Request.Form["txtPhone"].ToString(),
+                    State = Request.Form["txtState"].ToString(),
+                    Zipcode = Request.Form["txtZip"].ToString(),
+                    CustomerID = string.Empty,
+
+                };
+
+                carddetails = new CCard
+                {
+                    CreditCardExpiration = Request.Form["txtCCMonth"].ToString() + "/" + Request.Form["txtCCYear"].ToString(),
+                    CreditCardNumber = Request.Form["txtCC"].ToString(),
+                    SecurityCode = Request.Form["txtSecurity"].ToString(),
+                    CardType = Request.Form["paymentType"].ToString()
+                };
+
+
+            }
+            else
+            {
+                CustomerDetails = new DAL.Customer
+                {
+                    customername = Request.Form["txtName"].ToString(),
+                    Address = Request.Form["txtAddress"].ToString(),
+                    City = string.Empty,
+                    Country = "LK",
+                    Email = Request.Form["txtEmail"].ToString(),
+                    phone = Request.Form["txtPhone"].ToString(),
+                    State = string.Empty,
+                    Zipcode = string.Empty,
+                    CustomerID = string.Empty,
+
+                };
+
+            }
+
+            Session["CustomerEmail"] = Request.Form["txtEmail"].ToString();
+            Session["OrderAmount"] = Double.Parse(amount);
+            
+            // here Orders table , customer tables are updated after validation 
+            deliverydate = DateTime.Now.AddDays(2);
+            int ordID = dbCon.updateCustomerOrder(CustomerDetails, deliverydate, deliveryCharge, amount, App.exRate, App.cou_cur);
+
+            // Order dertail table is updating 
+            foreach (var item in SCart.Items)
+            {
+
+                Decimal ExTot = (Decimal)(Convert.ToDouble(item.Price.ToString()) * App.exRate);
+
+                dbCon.updateOrderDetails(ordID, item.ProductID, Convert.ToDecimal(item.Price), item.Quantity, discount, ExTot);
+            }
+
+            if (paymentType == "CC" || paymentType == "PP")
+            {
+                if (Request.QueryString["PayPal"] != null)
+                {
+                    // order.HandlePayPalReturn();
+                    string Result = HttpContext.Current.Request.QueryString["PayPal"];
+                    string Redir = (string)HttpContext.Current.Session["PayPal_Redirected"];
+                    // *** Only do this if we are redirected!
+                    if (Redir == "True")
+                    {
+                        HttpContext.Current.Session.Remove("PayPal_Redirected");
+
+                        // *** Set flag so we know not to go TO PayPal again
+                        PayPalReturnRequest = true;
+                        Request.Form["txtOrderAmount"] = ((decimal)HttpContext.Current.Session["PayPal_OrderAmount"]).ToString();
+                        Request.Form["paymentType"] = "PP";
+
+                        if (Result == "Cancel")
+                        {
+                            Response.Write("<script>alert('PayPal Payment Processing Failed');</script>");
+                        }
+                        else
+                        {
+                            // *** We returned successfully - simulate button click to save the order
+                            string script = "btnSubmit_Click();";
+                            ScriptManager.RegisterStartupScript(this.Page, this.GetType(), "Alert", script, true);
+
+                        }
+                    }
+                }
+                else
+                {
+
+
+
+                 decimal OrderAmount=0;
+               
+                    // *** Our simplistic 'order validation'
+                if(App.ISOcur != "USD")
+                {
+                    Zayko.Finance.CurrencyConverter myCurrencyConverter = new Zayko.Finance.CurrencyConverter();
+                    IList<CurrencyData> currencyList = new   List<CurrencyData>();
+                    currencyList.Add(new CurrencyData( App.ISOcur, "USD"));
+                    myCurrencyConverter.GetCurrencyData(ref currencyList);
+                    
+                    OrderAmount = decimal.Parse( ( currencyList[0].Rate * Double.Parse(amount)).ToString());
+                }
+                    // *** Dumb ass data simulation - this should only be set once the order is Validated!
+                    
+                    order.OrderAmount = OrderAmount;
+                    // *** Handle PayPal Processing seperately from ProcessCard() since it requires
+                    // *** passing off to another page on the PayPal Site.
+                    // *** This request will return to this page Cancel or Success querystring
+                    if (carddetails.CardType == "PP" && !PayPalReturnRequest)
+                    {
+                        order.HandlePayPalRedirection(); // this will end this request!
+                    }
+                    else
+                    {
+                        // *** CC Processing
+                        if (!order.ProcessCreditCard(CustomerDetails, carddetails, amount))
+                        {
+                            // if there is an error in processing the CC card catch the error and redirect to error page 
+                            string url = "~/ErrorPage?ErrorMessage=" + order.lblErrorMessage;
+                            Response.Redirect(url);
+
+                            // Response.Write("<script>alert('Credit Card processing failed try later...');</script>");
+                            //  return;    // failure - display error
+                            // *** Write the order amount (and enything else you might need into session)
+                            // *** Normally you'd probably write a PK for the final invoice so you 
+                            // *** can reload it on the Confirmation.aspx page
+                            Session["PayPal_OrderAmount"] = OrderAmount;
+                        }
+                    }
+                    // *** TODO:  Save the  order to Transaction table for further use
+                    // *** Show the confirmation page - don't transfer so they can refresh without error
+                    HttpContext.Current.Response.Redirect("~/ConfirmationPage.cshtml?Oid=" + ordID);
+                }
+            }
+            else
+            {
+                HttpContext.Current.Response.Redirect("~/ConfirmationPage.cshtml?Oid=" + ordID);
+            }
+
+        }
+    }
+}
+
+@section featured {
+    <section class="featured">
+        <div class="content-wrapper">
+            <hgroup class="title">
+                <h1>@Page.Title.</h1>
+                 <h2><i><b>fashionstore.lk</b></i></h2>
+            </hgroup>
+        </div>
+    </section>
+}
+
+<section>
+    <form id="frmOrderForm" method="post">
+        @AntiForgery.GetHtml()
+        @Html.ValidationSummary("Please correct the errors and try again.", excludeFieldErrors: true, htmlAttributes: null)
+      <div @if(SCart.Items.Count==0){<text> style="display:none;" </text>} >
+        <fieldset>
+            <legend>Shopping Cart Details</legend>
+            <br />
+
+            <table>
+                <tr>
+                    <td>
+                        <label>
+                            <b>Price</b></label>
+                    </td>
+                    <td>
+                        <label for="ItemImage">
+                            <b>Quantity</b>
+                        </label>
+                    </td>
+                    <td>
+                        <label for="ItemImage">
+                            <b>Image</b>
+                        </label>
+                    </td>
+                    <td>
+                        <label>
+                            <b>Description</b></label>
+                    </td>
+                    <td>
+                        <label>
+                            <b>SubTotal</b></label>
+                    </td>
+                </tr>
+                @foreach (var item in SCart.Items)
+                { 
+                    <tr>
+                        <td>
+                            <label id="Price">@AspControlUtil.formatPrice(item.Price ) </label>
+                        </td>
+                        <td>
+
+                            <label id="quantity">@item.Quantity </label>
+                        </td>
+                        <td>
+                            <img src="@AspControlUtil.getFullImagePath(Convert.ToString(item.ImageUrl))" alt="Red dot" width="100" height="150">
+                            @*
+                            <img src="data:image/*;base64,@Convert.ToBase64String(item.img)" alt="Red dot" width="100" height="150">*@
+                        </td>
+                        <td>
+                            <label id="Description">@item.ProductName</label>
+                        </td>
+
+                        <td>
+                            <label id="SubTotal">@AspControlUtil.formatPrice(item.SubTotal)</label>
+                        </td>
+                    </tr>
+                }
+
+                <tr>
+                    <td><label>Shopping Cart Total : </label><label><b> @AspControlUtil.formatPrice(SCart.Total ) </b></label></td>
+                </tr>
+            </table>
+        </fieldset>
+        <fieldset>
+            <legend>Fill in your Payment details</legend>
+            <ol>
+                <li class="Clothes">
+                    <label for="paymentType" @if (!ModelState.IsValidField("paymentType"))
+                                              {
+                        <text>class="error-label"</text>} >
+                        Select Payment Type :
+                    </label>
+                </li>
+                <li>
+                    <select id="paymentType" name="paymentType" onchange="selecpayment(this);">
+                        <option value="DY" selected="selected"  >On delivery</option   >
+                        <option value="PP">PayPal</option>
+                        <option value="CC">Credit Card</option>
+                    </select>
+                    @Html.ValidationMessage("paymentType")
+                </li>
+            </ol>
+            <ol>
+                    <li>
+                        <label for="txtName" '@if (!ModelState.IsValidField("txtName"))
+                                              {
+                        <text>class="error-label"</text>}'>
+                            Name:
+                        </label>
+                    </li>
+                    <li>
+                        <input type="text" id="txtName" name="txtName"  '@Validation.For("txtName")' />
+                        @Html.ValidationMessage("txtName")
+                    </li>
+                </ol>
+
+                <ol>
+                    <li>
+                        <label for="txtAddress" '@if (!ModelState.IsValidField("txtAddress"))
+                                                 {
+                        <text>class="error-label"</text>}'>
+                            Address:
+                        </label>
+                    </li>
+                    <li>
+                        <input type="text" id="txtAddress" name="txtAddress"  '@Validation.For("txtAddress")'   />
+                        @Html.ValidationMessage("txtAddress")
+                    </li>
+            </ol>
+            <div id="payByCC" style="display: none">
+                <ol>
+                    <li>
+                        <label for="txtCity" '@if (!ModelState.IsValidField("txtCity"))
+                                              {
+                        <text>class="error-label"</text>}'>
+                            City:
+                        </label>
+                    </li>
+                    <li>
+                        <input type="text" id="txtCity" name="txtCity"  '@Validation.For("txtCity")' />
+                        @Html.ValidationMessage("txtCity")
+                    </li>
+                </ol>
+                <ol>
+                    <li>
+                        <label for="txtZip" '@if (!ModelState.IsValidField("txtState"))
+                                             {
+                        <text>class="error-label"</text>}'>
+                            State/Province:
+                        </label>
+                    </li>
+                    <li>
+                        <input type="text" id="txtState" name="txtState"  '@Validation.For("txtState")' />
+                        @Html.ValidationMessage("txtState")
+                        &nbsp;&nbsp; 
+                                    <label for="ZipCode" '@if (!ModelState.IsValidField("txtZip"))
+                                                          {
+                                        <text>class="error-label"</text>}'>
+                                        Zip/Postal Code:
+                                    </label>
+
+                        <input type="text" id="txtZip" name="txtZip"  '@Validation.For("txtZip")' />
+                        @Html.ValidationMessage("txtZip")
+                    </li>
+                </ol>
+                <ol>
+
+                    <li>
+                        <label>Country:</label>
+                    </li>
+                    <li>
+                        <select id="txtCountryId" name="txtCountryId">
+                            <option value="LK" selected="selected">Sri Lanka</option>
+                            <option value="AL">Albania</option>
+                            <option value="AR">Argentina</option>
+                            <option value="AM">Armenia</option>
+                            <option value="AU">Australia</option>
+                            <option value="AT">Austria</option>
+                            <option value="BE">Belgium</option>
+                            <option value="BO">Bolivia</option>
+                            <option value="BR">Brazil</option>
+                            <option value="BG">Bulgaria</option>
+                            <option value="KH">Cambodia</option>
+                            <option value="CA">Canada</option>
+                            <option value="CL">Chile</option>
+                            <option value="CN">China</option>
+                            <option value="CO">Colombia</option>
+                            <option value="CR">Costa Rica</option>
+                            <option value="CU">Cuba</option>
+                            <option value="CZ">Czech Republic</option>
+                            <option value="DK">Denmark</option>
+                            <option value="EC">Ecuador</option>
+                            <option value="EG">Egypt</option>
+                            <option value="EE">Estonia</option>
+                            <option value="ET">Ethiopia</option>
+                            <option value="FI">Finland</option>
+                            <option value="FR">France</option>
+                            <option value="DE">Germany</option>
+                            <option value="GR">Greece</option>
+                            <option value="GL">Greenland</option>
+                            <option value="GD">Grenada</option>
+                            <option value="GU">Guam</option>
+                            <option value="GT">Guatemala</option>
+                            <option value="HT">Haiti</option>
+                            <option value="HN">Honduras</option>
+                            <option value="HK">Hong Kong</option>
+                            <option value="HU">Hungary</option>
+                            <option value="IS">Iceland</option>
+                            <option value="IN">India</option>
+                            <option value="ID">Indonesia</option>
+                            <option value="IE">Ireland</option>
+                            <option value="IL">Israel</option>
+                            <option value="IT">Italy</option>
+                            <option value="JM">Jamaica</option>
+                            <option value="JP">Japan</option>
+                            <option value="LB">Lebanon</option>
+                            <option value="LI">Liechtenstein</option>
+                            <option value="LU">Luxembourg</option>
+                            <option value="MG">Madagascar</option>
+                            <option value="MY">Malaysia</option>
+                            <option value="MX">Mexico</option>
+                            <option value="MC">Monaco</option>
+                            <option value="MA">Morocco</option>
+                            <option value="NL">Netherlands</option>
+                            <option value="NZ">New Zealand</option>
+                            <option value="NI">Nicaragua</option>
+                            <option value="KP">North Korea</option>
+                            <option value="NO">Norway</option>
+                            <option value="PK">Pakistan</option>
+                            <option value="PA">Panama</option>
+                            <option value="PE">Peru</option>
+                            <option value="PH">Philippines</option>
+                            <option value="PL">Poland</option>
+                            <option value="PT">Portugal</option>
+                            <option value="PR">Puerto Rico</option>
+                            <option value="RO">Romania</option>
+                            <option value="RU">Russian Federation</option>
+                            <option value="SA">Saudi Arabia</option>
+                            <option value="SG">Singapore</option>
+                            <option value="ZA">South Africa</option>
+                            <option value="KR">South Korea</option>
+                            <option value="ES">Spain</option>
+                            <option value="SE">Sweden</option>
+                            <option value="CH">Switzerland</option>
+                            <option value="TW">Taiwan</option>
+                            <option value="TH">Thailand</option>
+                            <option value="TR">Turkey</option>
+                            <option value="UA">Ukraine</option>
+                            <option value="AE">United Arab Emirates</option>
+                            <option value="GB">United Kingdom</option>
+                            <option value="US">United States</option>
+                            <option value="VE">Venezuela</option>
+                            <option value="VN">Vietnam</option>
+                            <option value="VG">Virgin Islands (British)</option>
+                            <option value="VI">Virgin Islands (U.S.)</option>
+                            <option value="ZZ">Other-Not Shown</option>
+                        </select>
+                    </li>
+                </ol>
+            </div>
+              <ol>
+
+                    <li>
+                        <label for="txtEmail" '@if (!ModelState.IsValidField("txtEmail"))
+                                               {
+                        <text>class="error-label"</text>}'>
+                            Email:
+                        </label>
+                    </li>
+                    <li>
+                        <input type="text" id="txtEmail" name="txtEmail" '@Validation.For("txtEmail")' @if (WebSecurity.UserExists(WebSecurity.CurrentUserName))  {<text>  value="@WebSecurity.CurrentUserName"</text>} />
+                        @Html.ValidationMessage("txtEmail")
+                    </li>
+                </ol>
+            <ol>
+                    <li>
+                        <label for="txtPhone" '@if (!ModelState.IsValidField("txtPhone"))
+                                               {
+                        <text>class="error-label"</text>}'>
+                            Phone:
+                        </label>
+                    </li>
+                    <li>
+                        <input type="text" id="txtPhone" name="txtPhone" '@Validation.For("txtPhone")' />
+                        @Html.ValidationMessage("txtPhone")
+                    </li>
+                </ol>
+
+            <div id="CCdetails"   style="display: none" >
+
+                <ol>
+                    <li>
+                        <label for="txtCC" '@if (!ModelState.IsValidField("txtCC"))
+                                            {
+                        <text>class="error-label"</text>}'>
+                            Card Number:
+                        </label>
+                        <li />
+                    <li>
+                        <input type="text" id="txtCC" '@Validation.For("txtCC")'  name="txtCC"   />
+                        @Html.ValidationMessage("txtCC")
+                    </li>
+                </ol>
+                <ol>
+
+                    <li>
+                        <label>Expiration: </label>
+                        <li />
+                    <li>
+                        <select id="txtCCMonth" name="txtCCMonth" enableviewstate="False">
+                            @for (int i = 1; i <= 12; i++)
+                            {
+                                int mnth = System.DateTime.Now.Month;
+                                DateTime month = new DateTime(2013, i, 1);
+                                if (i == mnth)
+                                {   
+                                <option selected="selected"  value="@month.ToString("MMM (M)")">@month.ToString("MM")</option> 
+                                }
+                                else
+                                {
+                                <option  value="@month.ToString("MMM (M)")">@month.ToString("MM")</option> 
+                                }
+                            }
+                        </select>
+                        <label>Year: </label>
+                        <select id="txtCCYear" name="txtCCYear" enableviewstate="False">
+                            @for (int i = 0; i <= 11; i++)
+                            {
+                                String year = (DateTime.Today.Year + i).ToString();
+                                if (i == 0)
+                                { 
+                                <option selected="selected" value="@year">@year</option> 
+                                }
+                                else
+                                {
+                                <option  value="@year">@year</option>
+                                }
+                            }
+                        </select>
+                    </li>
+
+                </ol>
+                <ol>
+                    <li>
+                        <label for="txtSecurity" '@if (!ModelState.IsValidField("txtSecurity"))
+                                                  {
+                        <text>class="error-label"</text>}'>
+                            Security Code:
+                        </label>
+                        <li />
+                    <li>
+                        <input type="text" id="txtSecurity" name="txtSecurity"  '@Validation.For("txtSecurity")' />
+                        @Html.ValidationMessage("txtSecurity")
+                    </li>
+                </ol>
+            </div>
+          
+
+
+            <input type="submit" id="btnSubmit" value="Process" />
+        </fieldset>
+      </div>
+        <div @if(SCart.Items.Count>0){<text> style="display:none;" </text>}>
+            <p>
+                <b>Your Shopping Cart is empty please select items </b>
+            </p>
+
+        </div>
+    </form>
+</section>
+<section>
+    <p>&nbsp;</p>
+    <blockquote>
+        <h3>Configuration:</h3>
+        <hr>
+  In order to configure this demo application you have to modify the 
+  Configuration.cs file and fill in your PayPal and CC processor information. 
+  The default demo is configured for Authorize.NET and PayPal with payments 
+  directed at West Wind Technologies. Feel free to make a donation, preferably 
+  large &lt;g&gt;. You can change the values in this file.
+  <p>
+  For more information on the classes and configuration requirements and URLs 
+  for each please see the following documentation topics:
+  </p>
+        <p>
+            <a
+                href="http://www.west-wind.com/westwindwebstore/docs/index.htm?page=_13U0XJX0K.htm">Credit 
+  Card Processing Classes</a><br>
+            <a
+                href="http://www.west-wind.com/westwindwebstore/docs/index.htm?page=_13Z13TG18.htm">Using 
+  the Credit Card Processing Classes</a>
+        </p>
+        <p>&nbsp;</p>
+    </blockquote>
+
+</section>
+

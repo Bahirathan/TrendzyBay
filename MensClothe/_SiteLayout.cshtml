@@ -1,0 +1,108 @@
+﻿
+@{
+    var itemsCount = 0;
+    var SC = (MensClothe.Cart)PageData["SCart"]; //PageData["CartCount"];
+    if (SC != null)
+    {
+        itemsCount = SC.Items.Count;
+    }   
+
+}
+
+
+@using System.Web.Optimization;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>@Page.Title - Welcome to Fashionstrore.lk </title>
+    <!--HIDE_IN_EMAIL-->
+    @Styles.Render("~/Content/themes/base/css", "~/Content/css");
+        <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+    @Scripts.Render("~/bundles/jquery", "~/bundles/jqueryui", "~/bundles/modernizr", "~/bundles/accounting");
+        <script src="~/Scripts/JavaScript-4.7.js"></script>
+    <meta name="viewport" content="width=device-width" />
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+          
+            $("#cart_href").mouseover(function () { $("#cart_details").css('display', 'block'); });
+            $("#cart_details").mouseover(function () { $("#cart_href").css('display', 'block'); });
+            $("#cart_details").mouseover(function () { $("#cart_details").css('display', 'block'); });
+            $("#cart_details").mouseout(function () { $("#cart_details").css('display', 'none'); });
+
+            UpdateCartDetails('@App.exRate', '@App.curSym');
+
+        });
+
+    </script>
+
+</head>
+<body>
+    <header>
+        <div class="content-wrapper">
+            <input type="hidden" id="itemid" />
+            <div class="float-left">
+                <p class="site-title"><a href="~/">your logo here</a></p>
+            </div>
+            <div class="float-right">
+                <section id="login">
+                    @if (WebSecurity.IsAuthenticated)
+                    {
+                        <text>
+                        Hello, <a class="email" href="~/Account/Manage" title="Manage">@WebSecurity.CurrentUserName</a>!
+                                <form id="logoutForm" action="~/Account/Logout" method="post">
+                                    @AntiForgery.GetHtml()
+                                    <a href="javascript:document.getElementById('logoutForm').submit()">Log out</a>
+                                </form>
+                        </text>
+                    }
+                    else
+                    {
+                        <ul>
+                            <li>
+                                <div><a href="~/Account/Register">Register</a></div>
+                            </li>
+                            <li>
+                                <div><a href="~/Account/Login">Log in</a></div>
+                            </li>
+                        </ul>
+                    }
+                </section>
+                <nav>
+                    <ul id="menu">
+                        <li><a href="~/HomePage">Home</a></li>
+                        <li><a href="~/About">About</a></li>
+                        <li><a href="~/Contact">Contact</a></li>
+                        <li><a href="~/Admin/Admin">Admin</a></li>
+                    </ul>
+                    <ul>
+                        <li>
+                            <a id="cart_href" href="~/ShoppingCart"></a>
+                            <div id="cart_details" style="display: none;">
+                            </div>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+            <!--END_HIDE_IN_EMAIL-->
+        </div>
+    </header>
+    <div id="body">
+        @RenderSection("featured", required: false)
+        <section class="content-wrapper main-content clear-fix">
+            @RenderBody()
+        </section>
+    </div>
+    <footer>
+        <div class="content-wrapper">
+            <div class="float-left">
+                <p>&copy; @DateTime.Now.Year - FashionStore.lk</p>
+            </div>
+        </div>
+    </footer>
+    @RenderSection("Scripts", required: false)
+</body>
+</html>
+
+

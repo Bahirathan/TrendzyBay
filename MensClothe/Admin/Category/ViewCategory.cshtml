@@ -1,0 +1,74 @@
+﻿@* Remove this section if you are using bundling *@
+
+@section Scripts {
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+        });
+    </script>
+}
+
+@{
+    Layout = "~/_siteLayout.cshtml";
+    Page.Title = "List of Categories";
+
+    // common page variables 
+    List<DAL.Category> CategoryRecords = new List<DAL.Category>();
+    var items = new List<DAL.Category>();
+
+    // get all customer records for display 
+    CategoryRecords = DAL.Category.getCategoryRecodCollections();
+}
+@section featured {
+    <section class="featured">
+        <div class="content-wrapper">
+            <hgroup class="title">
+                <h1>@Page.Title.</h1>
+                 <h2><i><b>fashionstore.lk</b></i></h2>
+            </hgroup>
+        </div>
+    </section>
+}
+
+<form method="post" enctype="multipart/form-data">
+    
+    @AntiForgery.GetHtml()
+    <fieldset>
+        <legend>View Category</legend>
+        <div id="detailform"   @if (CategoryRecords == null)
+                               {<text>style="display:none;"</text>}">
+            <table>
+
+                <tr>
+                    <th>Category  ID
+                    </th>
+                    <th>Category  Name
+                       
+                    </th>
+                    <th>Description
+                       
+                    </th>
+                </tr>
+                @foreach (var item in CategoryRecords)
+                { 
+                    <tr>
+                        <td>
+                            <label>@item.categoryid</label>
+                        </td>
+                        <td>
+                            <label>@item.categoryname</label>
+                        </td>
+                        <td>
+                            <label>@item.description</label>
+                        </td>
+                    </tr>
+                }
+            </table>
+        </div>
+    </fieldset>
+    <ul>
+        <li><a href="../../HomePage">Home</a></li>
+        <li><a href="../Admin/">Admin Home</a></li>
+    </ul>
+</form>

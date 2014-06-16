@@ -1,0 +1,135 @@
+﻿@* Remove this section if you are using bundling *@
+@using DAL;
+@section Scripts {
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+        });
+    </script>
+}
+
+@{
+    Layout = "~/_siteLayout.cshtml";
+    Page.Title = "Customer Details";
+
+    // common page variables 
+    List<Customer> CustomerRecords = new List<Customer>();
+    var items = new List<Customer>();
+
+    // get all customer records for display 
+    CustomerRecords = Customer.getAllCustomers();
+}
+@section featured {
+    <section class="featured">
+        <div class="content-wrapper">
+            <hgroup class="title">
+                <h1>@Page.Title.</h1>
+                <h2><i><b>fashionstore.lk</b></i></h2>
+            </hgroup>
+        </div>
+    </section>
+}
+<form method="post">
+    @AntiForgery.GetHtml()
+    <div id="detailform"   @if (CustomerRecords == null)
+                           {<text>style="display:none;"</text>}">
+        <table>
+            <tr>
+                <td>
+                    <label>
+                        Name:
+                    </label>
+                </td>
+                <td>
+                    <label for="txtAddress">
+                        Address:
+                    </label>
+                </td>
+                <td>
+                    <label for="txtCity">
+                        City:
+                    </label>
+                </td>
+                <td>
+                    <label for="txtState">
+                        State/Province:
+                    </label>
+                </td>
+                <td>&nbsp;&nbsp; 
+                         <label for="ZipCode">
+                             Zip/Postal Code:
+                         </label>
+                </td>
+                <td>
+                    <label>Country:</label>
+                </td>
+                <td>
+                    <label for="txtEmail">
+                        Email:
+                    </label>
+                </td>
+                <td>
+                    <label for="txtPhone">
+                        Phone:
+                    </label>
+
+                </td>
+            </tr>
+
+
+            @foreach (var item in CustomerRecords)
+            { 
+                <tr>
+                    <td>
+                        <label>
+                            @item.customername
+                        </label>
+                    </td>
+                    <td>
+                        <label>
+                            @item.Address
+                        </label>
+                    </td>
+                    <td>
+                        <label>
+                            @item.City
+                        </label>
+                    </td>
+                    <td>
+                        <label>
+                            @item.State
+                        </label>
+                    </td>
+                    <td>
+                        <label>
+                            @item.Zipcode
+                        </label>
+                    </td>
+                    <td>
+                        <label>
+                            @item.Country
+                        </label>
+                    </td>
+                    <td>
+                        <label>
+                            @item.Email
+                        </label>
+                    </td>
+                    <td>
+                        <label>
+                            @item.phone
+                        </label>
+                    </td>
+                    <td>
+                        <input id="@item.CustomerID"  onclick="DeleteCustomer(this); window.location = window.location;"  type="submit" name="@item.CustomerID" value="Delete Customer"  />
+                    </td>
+                </tr>
+            }
+        </table>
+    </div>
+    <ul>
+        <li><a href="../../HomePage">Home</a></li>
+        <li><a href="../Admin">Admin</a></li>
+    </ul>
+</form>

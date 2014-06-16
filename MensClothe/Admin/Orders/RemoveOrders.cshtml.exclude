@@ -1,0 +1,149 @@
+﻿@* Remove this section if you are using bundling *@
+@section Scripts {
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+}
+
+@{
+    Layout = "~/_siteLayout.cshtml";
+    Page.Title = "Clothes";
+    dynamic ProductRecord =null ;
+    var Price = "";
+    var quantity = "";
+    var Description = "";
+    var clotheId = 0;
+    Database db;
+    var items = new List<SelectListItem>();
+    var i = 0;
+    
+    
+     if (IsPost)
+     {
+    
+  
+         if (!string.IsNullOrEmpty(Request.Form["DDLid"]))
+         {
+           Session.Add("clotheId", Request.Form["DDLid"]) ;
+         }
+
+    if (Session["clotheId"] != null)
+    {
+            clotheId = int.Parse(Session["clotheId"].ToString());
+            db = Database.Open("mensClothe");
+            ProductRecord = db.QuerySingle("SELECT Description, Price, QOH FROM  Products Where ItemID=@0 ", clotheId);
+            if(ProductRecord != null)
+            {
+                Price = Convert.ToString( ProductRecord["Price"]);
+                quantity = Convert.ToString(ProductRecord["Description "]);
+                Description =Convert.ToString( ProductRecord["QOH"]) ;
+            } 
+    }
+    //else if (delConfirm != null && Session["clotheId"]!=null)
+    {
+         clotheId = int.Parse(Session["clotheId"].ToString());
+         db = Database.Open("mensClothe");
+         i = db.Execute("DELETE FROM  Products WHERE ItemID = @0 ", clotheId);
+   
+    
+    }
+    
+    
+     }
+    
+    
+
+        
+
+            
+        
+            
+            // Insert a new item into the database
+             db = Database.Open("mensClothe");
+
+            // Check if user already exists
+            var user = db.Query("SELECT * FROM  Products ");
+            
+            if(user != null)
+            {
+
+               items.Add(new SelectListItem { Text = "Select....", Value = "" });
+               foreach(var item in user)
+               {
+
+                   items.Add(new SelectListItem { Text = item["ItemName"], Value = Convert.ToString( item["ItemID"]) });
+                   
+               }
+            
+            }
+            
+               
+            
+        
+    
+}
+
+<hgroup class="title">
+    <h1>@Page.Title.</h1>
+    <h2>Delete Products Item</h2>
+</hgroup>
+
+<form method="post">
+    @AntiForgery.GetHtml()
+    @* If at least one validation error exists, notify the user *@
+    @Html.ValidationSummary("Adding Products was unsuccessful. Please correct the errors and try again.", excludeFieldErrors: true, htmlAttributes: null)
+
+    <fieldset>
+        <legend>Registration Form</legend>
+          <ol>
+            <li class="Clothes">
+                <label>
+                    Select the order to be Deleted:
+                </label>
+                <select id="ddlord" name="ddlord" onchange="selectorder(this);">
+                    @foreach (var item in items)
+                    {
+                        <option   value="@item.Value" >
+                            @item.Text
+                        </option>
+                    }
+                </select>
+            </li>
+        </ol>
+   
+    <div id="detailform"  style="display:none;" >
+
+        <ol>            
+
+            <li class="Price">
+                <label>
+                    Price</label>
+                <input type="text" id="Price" name="Price" value="@Price" ) />
+                @* Write any password validation errors to the page *@
+              
+            </li>
+            <li class="ItemImage">
+                <label for="ItemImage">
+                    Quantity</label>
+                <input type="text" id="quantity" name="quantity"  value="@quantity" />
+            </li>
+           
+            <li class="description">
+                <label>
+                    Description</label>
+                <input type="text" id="Desc" name="Description"  value="@Description" />
+            </li>
+            <li class="recaptcha"></li>
+        </ol>
+        <input type="submit" id="deleteConfirm" name="deleteConfirm" value="Confirm" />
+       </div>
+  </fieldset>
+    <p>
+    <input type="submit" id="deleteDetail"  name="deleteDetail" value="Delete Products Item"  @if (ProductRecord != null)
+                            {<text>style="display:none;"</text>}" />
+   </p>
+    <ul>
+        <li><a href="~/">Home</a></li>
+        <li><a href="~/Admin/Admin">Admin</a></li>
+        
+    </ul>
+</form>

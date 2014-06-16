@@ -1,0 +1,96 @@
+﻿
+@{
+    //Layout = "~/_siteLayout.cshtml";
+    Page.Title = "Detail";
+    
+    var Price = "";
+    var quantity = "";
+    var Description = "";
+    var size = "";
+    var PrdID = 0;
+    Products db = new Products();
+    var items = new List<SelectListItem>();
+    string img = string.Empty;
+    var ms = new MemoryStream();
+    var ItemName = "";
+    var SC = (MensClothe.Cart)PageData["SCart"]; //PageData["CartCount"];
+    
+    if (Request.QueryString["resultIndex"] != null)
+    {
+        PrdID = int.Parse(Request.QueryString["resultIndex"]);
+        Session.Add("resultIndex", PrdID);
+        Products ProductRecord = Products.getSellingDetail(PrdID);    // .QuerySingle("SELECT ItemName, Description, Price, QOH, Size, ItemImage FROM  Products Where ItemID=@0 ", PrdID);
+        if (ProductRecord != null)
+        {
+            Price =  Convert.ToString(double.Parse(ProductRecord.price) * App.exRate);
+            Description = Convert.ToString(ProductRecord.Description);
+            quantity = Convert.ToString(ProductRecord.quantity);
+            size = Convert.ToString(ProductRecord.categoryID);
+            img = Convert.ToString(ProductRecord.img);
+            ItemName = (ProductRecord.name.ToString());
+        }
+    }
+
+    if (IsPost)
+    {
+        if (Request.Form["Add2Cart"] != null)
+        {
+            if (SC == null)
+            {
+                SC = new MensClothe.Cart();
+            }
+            SC.Insert(PrdID, double.Parse(Price), 1, ItemName, img);
+            <p>The is  @ItemName is added to the Shopping Cart</p>
+            Response.Write("<script>window.close();</script>");
+          
+          
+       
+             
+         }
+    }
+}
+
+<hgroup class="title">
+   @* <h1>@Page.Title.</h1>*@
+    <h2>Delete Products Item</h2>
+</hgroup>
+
+<form method="post" enctype="multipart/form-data">
+  @*  @AntiForgery.GetHtml()*@
+     <fieldset>
+        <legend>Registration Form</legend>
+         <div id="detailform">
+              <ol>
+                <li class="Price">
+                    <label>
+                        Price</label>
+                    <input type="text" id="Price" name="Price" value="@AspControlUtil.formatPrice(double.Parse(Price))" ) />
+                </li>
+                <li class="ItemImage">
+                    <label for="ItemImage">
+                        Quantity</label>
+                    <input type="text" id="quantity" name="quantity"  value="@quantity" />
+                </li>
+                <li class="ItemImage">
+                    <label for="ItemImage">
+                        Image
+                    </label>
+                    <img id="ItemImage"   src="@AspControlUtil.getFullImagePath(Convert.ToString(img))" alt="Red dot" width="100" height="150">
+                </li>
+                <li class="Size">
+                    <label>
+                        Size</label>
+                    <input type="text" id="size" name="size"  value="@size" />
+                </li>
+                <li class="description">
+                    <label>
+                        Description</label>
+                    <input type="text" id="Desc" name="Description"  value="@Description" />
+                </li>
+                <li class="recaptcha"></li>
+            </ol>
+            <input type="submit" id="@PrdID" name="Add2Cart" onclick="Add2CartClick(this); refreshParent();" value="Add  to  Cart" />
+        </div>
+    </fieldset>
+   
+</form>

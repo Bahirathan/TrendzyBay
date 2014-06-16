@@ -1,0 +1,63 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "MensClothe", "MensClothe\", "{14A2F36F-3270-4A52-9F53-6798027EEF4C}"
+	ProjectSection(WebsiteProperties) = preProject
+		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.5"
+		ProjectReferences = "{9c7e2b63-ede2-462c-86fd-21613a1cdecf}|Search.dll;{9cc3546c-10a4-47f4-bc89-ef5b7fa03061}|DAL.dll;{40851705-1fc5-4f2c-aa66-bfd58f66a283}|CurrencyUtility.dll;{51ae4099-1814-4bf4-9f84-460bcecb21b8}|Zayko.Finance.CurrencyConverter.dll;"
+		Debug.AspNetCompiler.VirtualPath = "/MensClothe"
+		Debug.AspNetCompiler.PhysicalPath = "MensClothe\"
+		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\MensClothe\"
+		Debug.AspNetCompiler.Updateable = "true"
+		Debug.AspNetCompiler.ForceOverwrite = "true"
+		Debug.AspNetCompiler.FixedNames = "false"
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.VirtualPath = "/MensClothe"
+		Release.AspNetCompiler.PhysicalPath = "MensClothe\"
+		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\MensClothe\"
+		Release.AspNetCompiler.Updateable = "true"
+		Release.AspNetCompiler.ForceOverwrite = "true"
+		Release.AspNetCompiler.FixedNames = "false"
+		Release.AspNetCompiler.Debug = "False"
+		VWDPort = "4543"
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Search", "Search\Search.csproj", "{9C7E2B63-EDE2-462C-86FD-21613A1CDECF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DAL", "DAL\DAL.csproj", "{9CC3546C-10A4-47F4-BC89-EF5B7FA03061}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CurrencyUtility", "CurrencyUtility\CurrencyUtility.csproj", "{40851705-1FC5-4F2C-AA66-BFD58F66A283}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CurrencyConverter", "Zayko.Finance.CurrencyConverter\CurrencyConverter.csproj", "{51AE4099-1814-4BF4-9F84-460BCECB21B8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{14A2F36F-3270-4A52-9F53-6798027EEF4C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{14A2F36F-3270-4A52-9F53-6798027EEF4C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{14A2F36F-3270-4A52-9F53-6798027EEF4C}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{14A2F36F-3270-4A52-9F53-6798027EEF4C}.Release|Any CPU.Build.0 = Debug|Any CPU
+		{9C7E2B63-EDE2-462C-86FD-21613A1CDECF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C7E2B63-EDE2-462C-86FD-21613A1CDECF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9C7E2B63-EDE2-462C-86FD-21613A1CDECF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9C7E2B63-EDE2-462C-86FD-21613A1CDECF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9CC3546C-10A4-47F4-BC89-EF5B7FA03061}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9CC3546C-10A4-47F4-BC89-EF5B7FA03061}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9CC3546C-10A4-47F4-BC89-EF5B7FA03061}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9CC3546C-10A4-47F4-BC89-EF5B7FA03061}.Release|Any CPU.Build.0 = Release|Any CPU
+		{40851705-1FC5-4F2C-AA66-BFD58F66A283}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{40851705-1FC5-4F2C-AA66-BFD58F66A283}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{40851705-1FC5-4F2C-AA66-BFD58F66A283}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{40851705-1FC5-4F2C-AA66-BFD58F66A283}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51AE4099-1814-4BF4-9F84-460BCECB21B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51AE4099-1814-4BF4-9F84-460BCECB21B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51AE4099-1814-4BF4-9F84-460BCECB21B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51AE4099-1814-4BF4-9F84-460BCECB21B8}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

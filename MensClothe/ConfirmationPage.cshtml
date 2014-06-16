@@ -1,0 +1,152 @@
+@section Scripts {
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var rawUrl = "@AspControlUtil.getAppPath()ConfirmationPage.cshtml";
+            $.ajax({
+                type: "POST",
+                url: "@AspControlUtil.getAppPath()Web_Service/WebService.asmx/sendEmail",
+                contentType: "application/json; charset=utf-8",
+                data: "{url:'" + document.URL + "',Rawurl:'" + rawUrl + "'}",
+                success: OnSucceess,
+                error: OnError
+            })
+
+        });
+
+        function OnSucceess() {
+        }
+
+        function OnError(xhr, ErrorText, thrownError) {
+            debugger;
+            var err = eval("(" + xhr.responseText + ")");
+
+            alert(err.Message);
+        }
+    </script>
+
+}
+
+@{
+    Page.Title = "Confirmation";
+    Layout = "~/_siteLayout.cshtml";
+    var scart = (MensClothe.Cart)PageData["SCart"];
+
+    //Initialize page variables  
+    IEnumerable<dynamic> order = null;
+
+
+    try
+    {
+        if (Request.QueryString["Oid"] != null)
+        {
+            // get the order details and show to the user 
+            int orderID = int.Parse(Request.QueryString["Oid"].ToString());
+            order = DAL.Orders.getOrderDetails(orderID);
+        }
+        if (scart.Items.Count > 0)
+        {
+            for (int i = scart.Items.Count - 1; i >= 0; i--)
+            {
+                scart.DeleteItem(i);
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        string url = "~/ErrorPage?source=" + ex.Message;
+        Response.Redirect(url);
+
+    }
+
+       
+}
+
+
+@helper  getOderTotal(IEnumerable<dynamic> ord)
+{
+    double tot = 0.0;
+
+    foreach (var item in ord)
+    {
+
+        tot += (Double)item["val"];
+
+    }
+    @AspControlUtil.formatPrice(tot);
+    
+}
+
+
+
+<section>
+    <form id="frmOrderForm">
+        <fieldset>
+            <legend>Shopping Cart Details</legend>
+            <br />
+            <table>
+                <tr>
+                    <td>
+                        <label for="ItemImage">
+                            <b>Quantity</b>
+                        </label>
+                    </td>
+                    <td>
+                        <label for="ItemImage">
+                            <b>Item name</b>
+                        </label>
+                    </td>
+                    <td>
+                        <label>
+                            <b></b>
+                        </label>
+                    </td>
+                    <td>
+                        <label>
+                            <b>SubTotal</b></label>
+                    </td>
+                </tr>
+
+                @foreach (var item in order)
+                { 
+                    <tr>
+                        <td>
+                            <label id="quantity">@Convert.ToString(item["qty"])</label>
+                        </td>
+                        <td>
+                            <label id="itemname">@Convert.ToString(item["productName"]) </label>
+                        </td>
+                        <td>
+                            <img src="@AspControlUtil.getFullImagePath(Convert.ToString(item["image"]))" alt="Red dot" width="100" height="150">
+                            @*
+                            <img src="data:image/*;base64,@Convert.ToBase64String(item.img)" alt="Red dot" width="100" height="150">*@
+                        </td>
+                        <td>
+                            <label id="subtotal">@AspControlUtil.formatPrice(Convert.ToDouble(item["val"]))</label>
+                        </td>
+                    </tr>
+                }
+
+
+            </table>
+        </fieldset>
+        <meta name="progid" content="SharePoint.SmartPage.Document">
+        <meta name="SmartPageExpansion" content="full">
+        <meta http-equiv="content-type" content="text/html;charset=iso-8859-1">
+        <link href="wwWebstore.css" type="text/css" rel="stylesheet">
+        <h1>Thank you for your order</h1>
+        <p>
+            Thank you for your order of <b>@getOderTotal(@order)</b>
+        <p>
+            Copy of your details is sent it to your email 
+            We will be sending below items within 2 working days 
+        <p>
+            Please come back and visit us again.
+        <p>
+            <small>Bye from FashionStore.lk </small>
+    </form>
+</section>
+<section>
+</section>
+

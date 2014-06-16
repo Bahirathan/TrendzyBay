@@ -1,0 +1,140 @@
+﻿@* Remove this section if you are using bundling *@
+
+@section Scripts {
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+        });
+    </script>
+}
+
+@{
+    Layout = "~/_siteLayout.cshtml";
+    Page.Title = "Suppliers";
+    // initializing the page variables 
+
+    List<DAL.Suppliers> SuppliersRecords = new List<DAL.Suppliers>();
+    var items = new List<DAL.Suppliers>();
+    SuppliersRecords = DAL.Suppliers.getAllSuppliers();
+}
+
+
+
+@section featured {
+    <section class="featured">
+        <div class="content-wrapper">
+            <hgroup class="title">
+                <h1>@Page.Title.</h1>
+                <h2><i><b>fashionstore.lk</b></i></h2>
+            </hgroup>
+        </div>
+    </section>
+}
+<form method="post">
+
+    @AntiForgery.GetHtml()
+    @Html.ValidationSummary("Please correct the errors and try again.", excludeFieldErrors: true, htmlAttributes: null)
+    @* If at least one validation error exists, notify the user *@
+    <div id="detailform"   @if (SuppliersRecords == null)
+                           {<text>style="display:none;"</text>}">
+        <table>
+            <tr>
+                <td>
+                    <label>
+                        Supplier Name:
+                    </label>
+                </td>
+                <td>
+                    <label>
+                        Contact   Name:
+                    </label>
+                </td>
+                <td>
+                    <label for="txtAddress">
+                        Address:
+                    </label>
+                </td>
+                <td>
+                    <label for="txtCity">
+                        City:
+                    </label>
+                </td>
+                <td>
+                    <label for="txtState">
+                        State/Province:
+                    </label>
+                </td>
+                <td>&nbsp;&nbsp; 
+                       
+                         <label for="ZipCode">
+                             Zip/Postal Code:
+                         </label>
+                </td>
+                <td>
+                    <label>Country:</label>
+                </td>
+                <td>
+
+                    <label for="txtEmail">
+                        Email:
+                    </label>
+                </td>
+                <td>
+                    <label for="txtPhone">
+                        Phone:
+                    </label>
+                </td>
+                <td></td>
+            </tr>
+            @foreach (var item in SuppliersRecords)
+            { 
+                <tr>
+                    <td>
+                        <label>@item.companyname</label>
+
+                    </td>
+                    <td>
+                        <label>@item.contactname</label>
+
+                    </td>
+                    <td>
+                        <label>@item.address</label>
+
+                    </td>
+                    <td>
+                        <label>@item.city</label>
+
+                    </td>
+                    <td>
+                        <label>@item.region</label>
+
+                        &nbsp;&nbsp; 
+                    </td>
+                    <td>
+                        <label>@item.postalcode</label>
+
+                    </td>
+                    <td>
+                        <label>@item.country</label>
+
+
+                    </td>
+                    <td>
+                        <label>@item.Email</label>
+
+                    </td>
+                    <td>
+                        <label>@item.phone</label>
+
+                    </td>
+                    <td></td>
+                </tr>
+            }
+        </table>
+    </div>
+    <ul>
+        <li><a href="../../HomePage">Home</a></li>
+        <li><a href="../Admin">Admin</a></li>
+    </ul>
+</form>

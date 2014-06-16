@@ -1,0 +1,216 @@
+﻿@* Remove this section if you are using bundling *@
+@section Scripts {
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+  
+}
+
+@{
+    Layout = "~/_siteLayout.cshtml";
+    Page.Title = "Clothes";
+
+    //page variables initialization
+    dynamic CustomerRecord = null;
+    var cusId = 0;
+    var items = new List<SelectListItem>();
+    var i = 0;
+    var ms = new MemoryStream();
+    DAL.Customer CustomerDetails = new DAL.Customer();
+    
+    //Validation for form input fields 
+    //--------------------------------//
+
+    //Validation for Customer Name
+    Validation.RequireField("txtName", "Enter your Name.");
+    Validation.Add("txtName",
+        Validator.StringLength(
+            maxLength: Int32.MaxValue,
+            minLength: 2,
+            errorMessage: "Name Cannot be empty"));
+
+    //Validation for City         
+    Validation.RequireField("txtCity", "Enter city Name.");
+    Validation.Add("txtCity",
+        Validator.StringLength(
+            maxLength: Int32.MaxValue,
+            minLength: 6,
+            errorMessage: "City name cannot empty."));
+
+
+    //Validation for credit card number         
+    Validation.RequireField("txtCC", "Enter card number.");
+    Validation.Add("txtCC",
+        Validator.StringLength(
+            maxLength: 16,
+            minLength: 16,
+            errorMessage: "Credit Card number must be 16 characters ."));
+
+    //Validation for state
+    Validation.RequireField("txtState", "Enter state.");
+    Validation.Add("txtState",
+        Validator.StringLength(
+            maxLength: Int32.MaxValue,
+            minLength: 6,
+            errorMessage: "Province name cannot empty."));
+
+    //Validation for address
+    Validation.RequireField("txtAddress", "Enter your Address");
+    Validation.Add("txtAddress",
+        Validator.StringLength(
+            maxLength: Int32.MaxValue,
+            minLength: 6,
+            errorMessage: "Enter detail address"));
+
+    //Validation for email
+    Validation.RequireField("txtEmail", "Enter Email Address");
+    Validation.Add("txtEmail",
+      Validator.Regex(@"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$",
+      "Invalid format for an email address"));
+
+    //Validation for phone
+    Validation.RequireField("txtPhone", "Enter Phone Number");
+    Validation.Add("txtPhone",
+    Validator.StringLength(maxLength: Int32.MaxValue,
+            minLength: 10, errorMessage: "Must be between 10 and 20"));
+
+    //Validation for credit card security no
+    Validation.Add("txtSecurity",
+        Validator.Required("Must be three numbers"));
+
+    if (IsPost)
+    {
+        var detailForm = Request.Form["detailform"];
+        var updateDetail = Request.Form["UpdateDetail"];
+        var updateConfirm = Request.Form["UpdateConfirm"];
+
+        // get the customer id from the dropdown list for modification
+        if (!string.IsNullOrEmpty(Request.Form["DDLid"]))
+        {
+            Session.Add("cusId", Request.Form["DDLid"]);
+        }
+
+        if (updateDetail != null && Session["cusId"] != null)
+        {
+            cusId = int.Parse(Session["cusId"].ToString());
+            CustomerRecord = DAL.Customer.getCustomerDetail(cusId);
+        }
+
+        // updating the customer details to customer object 
+        else if (updateConfirm != null && Session["cusId"] != null)
+        {
+            CustomerDetails = new DAL.Customer
+            {
+                customername = Request.Form["txtName"].ToString(),
+                Address = Request.Form["txtAddress"].ToString(),
+                City = Request.Form["txtCity"].ToString(),
+                Country = Request.Form["txtCountryId"].ToString(),
+                Email = Request.Form["txtEmail"].ToString(),
+                phone = Request.Form["txtPhone"].ToString(),
+                State = Request.Form["txtState"].ToString(),
+                Zipcode = Request.Form["txtZip"].ToString(),
+                CustomerID = Session["cusId"].ToString()
+            };
+
+            // customer data being updated to database if error occus then redirected to error page 
+            // this has to be modified to send to common error page wherever error occurs in the web site 
+            i = DAL.Customer.UpdateCustomer(CustomerDetails);
+            if (i == 0)
+            {
+                string url = "~/ErrorPage?ErrorMessage=" + "Dabse Error Occured";
+                Response.Redirect(url);
+            }
+        }
+    }
+
+    // Populating the dropdown list with existing customers for modification 
+    List<DAL.Customer> CustomerRecords = DAL.Customer.getAllCustomers();
+    if (CustomerRecords != null)
+    {
+
+        items.Add(new SelectListItem { Text = "Select....", Value = "" });
+        foreach (var item in CustomerRecords)
+        {
+            items.Add(new SelectListItem { Text = item.customername, Value = Convert.ToString(item.CustomerID) });
+
+        }
+
+    }
+    
+}
+
+<hgroup class="title">
+    <h1>@Page.Title.</h1>
+    <h2>Delete Products Item</h2>
+</hgroup>
+
+<form method="post" enctype="multipart/form-data">
+    @AntiForgery.GetHtml()
+    @Html.ValidationSummary("Adding Products was unsuccessful. Please correct the errors and try again.", excludeFieldErrors: true, htmlAttributes: null)
+
+    <fieldset>
+        <legend>Registration Form</legend>
+        <ol>
+            <li class="Customer">
+                <label>
+                    Select Products Item to be Deleted:
+                </label>
+                @Html.DropDownList("DDLid", items)
+            </li>
+        </ol>
+        <div id="detailform"   @if (CustomerDetails != null)
+                               {<text>style="display:none;"</text>}">
+            <table>
+                <tr>
+                    <td>
+                        <label>
+                            Name:
+                        </label>
+                        <input type="text" id="txtName" name="txtName"  value="@CustomerDetails.customername" />
+                        <label for="txtAddress">
+                            Address:
+                        </label>
+                        <input type="text" id="txtAddress" name="txtAddress"  value="@CustomerDetails.Address"   />
+
+                        <label for="txtCity">
+                            City:
+                        </label>
+                        <input type="text" id="txtCity" name="txtCity"   value="@CustomerDetails.City" />
+
+                        <label for="txtState">
+                            State/Province:
+                        </label>
+                        <input type="text" id="txtState" name="txtState"  value="@CustomerDetails.State" />
+                        &nbsp;&nbsp; 
+                       
+                         <label for="ZipCode">
+                             Zip/Postal Code:
+                         </label>
+                        <input type="text" id="txtZip" name="txtZip"  value="@CustomerDetails.Zipcode" />
+
+                        <label>Country:</label>
+                        <input type="text" id="Country" name="txtZip" value="@CustomerDetails.Country" />
+
+                        <label for="txtEmail">
+                            Email:
+                        </label>
+                        <input type="text" id="txtEmail" name="txtEmail" value="@CustomerDetails.Email" />
+                        <label for="txtPhone">
+                            Phone:
+                        </label>
+                        <input type="text" id="txtPhone" name="txtPhone" value="@CustomerDetails.phone" />
+                    </td>
+                    <td></td>
+                </tr>
+            </table>
+            <input type="submit" id="UpdateConfirm" name="UpdateConfirm" value="Confirm" />
+        </div>
+    </fieldset>
+    <p>
+        <input type="submit" id="UpdateDetail"  name="UpdateDetail" value="Update Customer"  @if (CustomerRecord != null)
+                                                                                             {<text>style="display:none;"</text>}" />
+    </p>
+    <ul>
+        <li><a href="~/">Home</a></li>
+        <li><a href="~/Admin/Admin">Admin</a></li>
+    </ul>
+</form>

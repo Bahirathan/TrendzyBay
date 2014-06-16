@@ -1,0 +1,197 @@
+﻿@* Remove this section if you are using bundling *@
+@section Scripts {
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+       <script type="text/javascript">
+
+        function OnSucceess() {
+        }
+        function OnError(xhr, ErrorText, thrownError) {
+            var err = eval("(" + xhr.responseText + ")");
+            alert(err.Message);
+        }
+
+
+        $(document).ready(function () {
+
+        });
+
+      
+     
+    </script>
+}
+
+@{
+    Layout = "~/_siteLayout.cshtml";
+    Page.Title = "Remove Supplier";
+    
+    // page variables 
+    dynamic SuppliersRecord = new DAL.Suppliers();
+    var suppId = 0;
+    var items = new List<SelectListItem>();
+    var i = 0;
+    var suppliers = DAL.Suppliers.getAllSuppliers();
+
+
+    // populate the dropdown list for showing the user for deleting the supplier  
+    if (suppliers != null)
+    {
+        items.Add(new SelectListItem { Text = "Select....", Value = "" });
+        foreach (var item in suppliers)
+        {
+            items.Add(new SelectListItem { Text = item.companyname, Value = Convert.ToString(item.supplierid) });
+        }
+    }
+    
+    //if (IsPost)
+    //{
+    //    if (!string.IsNullOrEmpty(Request.Form["DDLid"].ToString()) && !string.IsNullOrEmpty(Request.Form["deleteConfirm"].ToString()))
+    //    {
+    //        suppId = int.Parse(Request.Form["DDLid"].ToString());
+    //        i = DAL.Suppliers.DeleteSuppliers(suppId.ToString());
+    //    }
+    //}
+}
+
+@section featured {
+    <section class="featured">
+        <div class="content-wrapper">
+            <hgroup class="title">
+                <h1>@Page.Title.</h1>
+                 <h2><i><b>fashionstore.lk</b></i></h2>
+            </hgroup>
+        </div>
+    </section>
+}
+<form method="post">
+    @AntiForgery.GetHtml()
+    @* If at least one validation error exists, notify the user *@
+    @Html.ValidationSummary("Adding Products was unsuccessful. Please correct the errors and try again.", excludeFieldErrors: true, htmlAttributes: null)
+
+    <fieldset>
+        <legend>Delete Supplier</legend>
+        <ol>
+            <li class="Clothes">
+                <label>
+                        Details for the  Supplier to be deleted  :
+                </label>
+                 <select id="DDLid" name="DDLid" onchange="selectSupplier(this);">
+                    @foreach (var item in items)
+                    {
+                        <option   value="@item.Value" >
+                            @item.Text
+                        </option>
+                    }
+
+                </select>
+      
+            </li>
+        </ol>
+        <div id="detailform"   style="display:none;">
+            <ol>
+                <li>
+                    <label for="txtCompanyName">
+                        Company  Name:
+                   </label>
+                </li>
+                <li>
+                    <input type="text" id="txtCompanyName" name="txtCompanyName"  value="@SuppliersRecord.companyname"  />
+                </li>
+            </ol>
+
+            <ol>
+                <li>
+                    <label for="txtName">
+                        ContactName:
+                    </label>
+                </li>
+                <li>
+                    <input type="text" id="txtName" name="txtName"  value="@SuppliersRecord.contactname" />
+                </li>
+            </ol>
+            <ol>
+                <li>
+                    <label for="txtAddress">
+                        Address:
+                    </label>
+                </li>
+                <li>
+                    <input type="text" id="txtAddress" name="txtAddress"  value="@SuppliersRecord.address" />
+                </li>
+            </ol>
+            <ol>
+                <li>
+                    <label for="txtCity">
+                        City:
+                    </label>
+                </li>
+                <li>
+                    <input type="text" id="txtCity" name="txtCity" value="@SuppliersRecord.city"  />
+                </li>
+            </ol>
+            <ol>
+                <li>
+                    <label for="txtState">
+                        State/Province:
+                    </label>
+                </li>
+                <li>
+                    <input type="text" id="txtState" name="txtState" '@Validation.For("txtState")' value="@SuppliersRecord.region" />
+                    &nbsp;&nbsp; 
+                          @Html.ValidationMessage("txtState")
+                </li>
+            </ol>
+            <ol>
+                <li>
+                    <label for="txtZip">
+                        Zip/Postal Code:
+                    </label>
+                </li>
+                <li>
+                    <input type="text" id="txtZip" name="txtZip"  value="@SuppliersRecord.postalcode" />
+                </li>
+            </ol>
+            <ol>
+                <li>
+                    <label for="txtCountry">
+                        Country:
+                    </label>
+                </li>
+                <li>
+                    <input type="text" id="txtCountry" name="txtCountry"  value="@SuppliersRecord.country" />
+                </li>
+            </ol>
+            <ol>
+                <li>
+                    <label for="txtEmail">
+                        Email:
+                    </label>
+                </li>
+                <li>
+                    <input type="text" id="txtEmail" name="txtEmail"  value= "@SuppliersRecord.Email" />
+                </li>
+            </ol>
+            <ol>
+                <li>
+                    <label for="txtPhone">
+                        Phone:
+                    </label>
+                </li>
+                <li>
+                    <input type="text" id="txtPhone" name="txtPhone"    value="@SuppliersRecord.phone"  />
+
+                </li>
+            </ol>
+            <ol>
+                <li>
+             <input type="submit" id="DeleteConfirm" name="DeleteConfirm" onclick="DeleteSupplier();" value="Confirm Delete" />
+                </li>
+                    </ol>
+        </div>
+    </fieldset>
+    <ul>
+        <li><a href="../../HomePage">Home</a></li>
+        <li><a href="../Admin">Admin</a></li>
+
+    </ul>
+</form>

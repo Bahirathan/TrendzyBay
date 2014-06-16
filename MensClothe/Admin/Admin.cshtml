@@ -1,0 +1,96 @@
+﻿@{
+    Layout = "~/_SiteLayout.cshtml";
+    PageData["Title"] = "Administrators only";
+
+    if (!String.IsNullOrEmpty(WebSecurity.CurrentUserName))
+    {
+        if (Roles.IsUserInRole("admin"))
+        {
+    <span>Welcome <b>@WebSecurity.CurrentUserName</b>! </span>
+        }
+        else
+        {
+            Response.Redirect("~/AdminError");
+        }
+
+    }
+    else
+    {
+
+        var returnUrl = "~/Account/Login?ReturnUrl=" + Request.Url.LocalPath;
+        Response.Redirect(returnUrl);
+
+    
+    }
+}
+
+
+
+
+@section featured {
+    <section class="featured">
+        <div class="content-wrapper">
+            <hgroup class="title">
+                <h1>@Page.Title.</h1>
+                <h2><i><b>fashionstore.lk</b></i></h2>
+            </hgroup>
+        </div>
+    </section>
+}
+<section class="admin">
+    <nav class="red">
+        @*  @if (WebSecurity.IsAuthenticated)
+        {
+            *@<ul class="clear">
+                <li><a href="#">Products</a>
+                    <ul>
+                        <li><a href="~/Admin/Products/ProductResults">View</a></li>
+                        <li><a href="~/Admin/Products/AddProduct">Add</a></li>
+                        <li><a href="~/Admin/Products/RemoveItem">Remove</a></li>
+                        <li><a href="~/Admin/Products/ModifyProduct">Change</a></li>
+                    </ul>
+                </li>
+                <li><a href="#">Category</a>
+                    <ul>
+                        <li><a href="~/Admin/Category/ViewCategory">View</a></li>
+                        <li><a href="~/Admin/Category/AddCategory">Add</a></li>
+                        <li><a href="~/Admin/Category/RemoveCategory">Remove</a></li>
+                        <li><a href="~/Admin/Category/ModifyCategory">Change</a></li>
+                    </ul>
+                </li>
+                <li><a href="#">Oroder</a>
+                    <ul>
+                        <li><a href="~/Admin/Orders/ViewOrders">View</a></li>
+                        @*     <li><a href="~/Admin/Orders/AddOrders">Add</a></li>*@
+                        @*     <li><a href="~/Admin/Orders/RemoveOrders">Remove</a></li>*@
+                        @*    <li><a href="~/Admin/Orders/ModifyOrders">Change</a></li>*@
+                    </ul>
+                </li>
+
+                <li><a href="#">Customer</a>
+                    <ul>
+                        <li><a href="~/Admin/Customer/ViewCustomers">View</a></li>
+                        @*   <li><a href="~/Admin/Customer/AddCustomer">Add</a></li>
+                        <li><a href="~/Admin/Customer/RemoveCustomer">Remove</a></li>
+                        <li><a href="~/Admin/Customer/ModifyCustomer">Change</a></li>*@
+                    </ul>
+                </li>
+                <li><a href="#">Supplier</a>
+                    <ul>
+                        <li><a href="~/Admin/Supplier/ViewSupplier">View</a></li>
+                        <li><a href="~/Admin/Supplier/AddSupplier">Add</a></li>
+                        <li><a href="~/Admin/Supplier/RemoveSupplier">Remove</a></li>
+                        <li><a href="~/Admin/Supplier/ModifySupplier">Change</a></li>
+                    </ul>
+                </li>
+            </ul>
+        @*}
+        else
+        {
+            var returnUrl = "~/Account/Login?ReturnUrl=" + Request.Url.LocalPath;
+            Response.Redirect(returnUrl);
+        }*@
+    </nav>
+</section>
+
+

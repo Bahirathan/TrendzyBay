@@ -1,0 +1,257 @@
+﻿@* Remove this section if you are using bundling *@
+@{
+    Layout = "~/_SiteLayout.cshtml";
+    PageData["Title"] = "Add Supplier";
+
+   }
+
+
+@section Scripts {
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+}
+
+@{
+    //Page variable's inizalization
+    var items = new List<SelectListItem>();
+    var SuppliersDetails = new DAL.Suppliers();
+    var i = 0;
+
+    //Validation for user inputs 
+    
+    //Validation for supplier company name 
+    Validation.RequireField("txtCompanyName", "Supplier Name.");
+    Validation.Add("txtCompanyName",
+        Validator.StringLength(
+            maxLength: Int32.MaxValue,
+            minLength: 2,
+            errorMessage: "Supplier Name Cannot be empty"));
+
+    //Validation for supplier contact name     
+    Validation.RequireField("txtName", "Contact Name.");
+    Validation.Add("txtName",
+        Validator.StringLength(
+            maxLength: Int32.MaxValue,
+            minLength: 2,
+            errorMessage: "Contact Name Cannot be empty"));
+
+    //Validation for city 
+    Validation.RequireField("txtCity", "Enter city Name.");
+    Validation.Add("txtCity",
+        Validator.StringLength(
+            maxLength: Int32.MaxValue,
+            minLength: 6,
+            errorMessage: "City name cannot empty."));
+
+    //Validation for state
+    Validation.RequireField("txtState", "Enter state.");
+    Validation.Add("txtState",
+        Validator.StringLength(
+            maxLength: Int32.MaxValue,
+            minLength: 6,
+            errorMessage: "Province name cannot empty."));
+    //Validation for country 
+    Validation.RequireField("txtCountry", "Country Name required.");
+    Validation.Add("txtCountry",
+         Validator.StringLength(
+             maxLength: Int32.MaxValue,
+             minLength: 2,
+             errorMessage: "Country Name required"));
+
+
+    //Validation for supplier address
+    Validation.RequireField("txtAddress", "Enter your Address");
+    Validation.Add("txtAddress",
+        Validator.StringLength(
+            maxLength: Int32.MaxValue,
+            minLength: 6,
+            errorMessage: "Enter detail address"));
+
+    //Validation for supplier email
+    Validation.RequireField("txtEmail", "Enter Email Address");
+    Validation.Add("txtEmail",
+      Validator.Regex(@"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$",
+      "Invalid format for an email address"));
+
+    //Validation for supplier phone number 
+    Validation.RequireField("txtPhone", "Enter Phone Number");
+    Validation.Add("txtPhone",
+    Validator.StringLength(maxLength: Int32.MaxValue,
+            minLength: 10, errorMessage: "Must be between 10 and 20"));
+
+
+
+    if (IsPost)
+    {
+        // If forma variables are validated then records are added to the database
+        if (Validation.IsValid())
+        {
+
+            SuppliersDetails = new DAL.Suppliers
+            {
+                fax = string.Empty,
+                companyname = Request.Form["txtCompanyName"].ToString(),
+                contactname = Request.Form["txtName"].ToString(),
+                address = Request.Form["txtAddress"].ToString(),
+                city = Request.Form["txtCity"].ToString(),
+                country = Request.Form["txtCountry"].ToString(),
+                Email = Request.Form["txtEmail"].ToString(),
+                phone = Request.Form["txtPhone"].ToString(),
+                region = Request.Form["txtState"].ToString(),
+                postalcode = Request.Form["txtZip"].ToString(),
+
+            };
+
+
+            i = DAL.Suppliers.insert(SuppliersDetails);
+            if (i == 0)
+            {
+                string url = "~/ErrorPage?ErrorMessage=" + "Dabse Error Occured";
+                Response.Redirect(url);
+            }
+        }
+    }
+}
+@section featured {
+    <section class="featured">
+        <div class="content-wrapper">
+            <hgroup class="title">
+                <h1>@Page.Title.</h1>
+                 <h2><i><b>fashionstore.lk</b></i></h2>
+            </hgroup>
+        </div>
+    </section>
+}
+<section>
+    <form method="post" enctype="multipart/form-data">
+        @AntiForgery.GetHtml()
+        @Html.ValidationSummary("Please correct the errors and try again.", excludeFieldErrors: true, htmlAttributes: null)
+        <fieldset>
+            <legend>Add Supplier</legend>
+            <ol>
+                <li>
+
+                    <label for="txtCompanyName" @if (!ModelState.IsValidField("txtCompanyName"))
+                                                { <text>class="error-label"</text>}>
+                        Company  Name:
+                    
+                    </label>
+                </li>
+                <li>
+                    <input type="text" id="txtCompanyName" name="txtCompanyName" />
+                    @Html.ValidationMessage("txtCompanyName")
+                </li>
+            </ol>
+
+            <ol>
+                <li>
+                    <label for="txtName" @if (!ModelState.IsValidField("txtName"))
+                                         { <text>class="error-label"</text>}>
+                        ContactName:
+                    </label>
+                </li>
+                <li>
+
+                    <input type="text" id="txtName" name="txtName" />
+                    @Html.ValidationMessage("txtName")
+                </li>
+            </ol>
+            <ol>
+                <li>
+                    <label for="txtAddress" @if (!ModelState.IsValidField("txtAddress"))
+                                            { <text>class="error-label"</text>}>
+                        Address:
+                    </label>
+                </li>
+                <li>
+                    <input type="text" id="txtAddress" name="txtAddress" />
+                    @Html.ValidationMessage("txtAddress")
+                </li>
+            </ol>
+            <ol>
+                <li>
+                    <label for="txtCity" @if (!ModelState.IsValidField("txtCity"))
+                                         { <text>class="error-label"</text>}>
+                        City:
+                    </label>
+                </li>
+                <li>
+                    <input type="text" id="txtCity" name="txtCity" />
+                    @Html.ValidationMessage("txtCity")
+                </li>
+            </ol>
+            <ol>
+                <li>
+                    <label for="txtState" @if (!ModelState.IsValidField("txtState"))
+                                          { <text>class="error-label"</text>}>
+                        State/Province:
+                    </label>
+                </li>
+                <li>
+                    <input type="text" id="txtState" name="txtState" />
+                    &nbsp;&nbsp; 
+                          @Html.ValidationMessage("txtState")
+                </li>
+            </ol>
+            <ol>
+                <li>
+                    <label for="txtZip" @if (!ModelState.IsValidField("txtZip"))
+                                        {<text>class="error-label"</text>}>
+                        Zip/Postal Code:
+                    </label>
+                </li>
+                <li>
+                    <input type="text" id="txtZip" name="txtZip" />
+                    @Html.ValidationMessage("txtZip")
+                </li>
+            </ol>
+            <ol>
+                <li>
+                    <label for="txtCountry" @if (!ModelState.IsValidField("txtCountry"))
+                                            {<text>class="error-label"</text>}>
+                        Country:
+                    </label>
+                </li>
+                <li>
+                    <input type="text" id="txtCountry" name="txtCountry" />
+                    @Html.ValidationMessage("txtCountry")
+                </li>
+            </ol>
+            <ol>
+                <li>
+                    <label for="txtEmail" @if (!ModelState.IsValidField("txtEmail"))
+                                          { <text>class="error-label"</text>}>
+                        Email:
+                    </label>
+                </li>
+                <li>
+                    <input type="text" id="txtEmail" name="txtEmail" />
+                    @Html.ValidationMessage("txtEmail")
+                </li>
+            </ol>
+            <ol>
+                <li>
+                    <label for="txtPhone" @if (!ModelState.IsValidField("txtPhone"))
+                                          { <text>class="error-label"</text>}>
+                        Phone:
+                    </label>
+                </li>
+                <li>
+                    <input type="text" id="txtPhone" name="txtPhone" />
+                    @Html.ValidationMessage("txtPhone")
+                </li>
+            </ol>
+            <ol>
+                <li>
+                    <input type="submit" id="UpdateConfirm" name="UpdateConfirm" value="Confirm" />
+                </li>
+            </ol>
+
+        </fieldset>
+        <ul>
+            <li><a href="../../HomePage">Home</a></li>
+            <li><a href="../Admin">Admin</a></li>
+
+        </ul>
+    </form>
+</section>

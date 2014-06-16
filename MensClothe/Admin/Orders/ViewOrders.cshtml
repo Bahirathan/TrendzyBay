@@ -1,0 +1,150 @@
+﻿@* Remove this section if you are using bundling *@
+@using DAL;
+@section Scripts {
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script src="~/Scripts/jquery-latest.min.js"></script>
+    <script src="~/Scripts/jquery.tmpl.min.js"></script>
+    
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+
+
+        });
+
+
+        function OnSucceess() {
+        }
+        function OnError(xhr, ErrorText, thrownError) {
+            var err = eval("(" + xhr.responseText + ")");
+            alert(err.Message);
+        }
+    </script>
+}
+
+@{
+    Layout = "~/_siteLayout.cshtml";
+    Page.Title = "Orders Details";
+    List<Orders> OrderRecords = new List<Orders>();
+    var items = new List<Orders>();
+    OrderRecords = Orders.getOrderCollections();
+}
+
+@section featured {
+    <section class="featured">
+        <div class="content-wrapper">
+            <hgroup class="title">
+                <h1>@Page.Title.</h1>
+                 <h2><i><b>fashionstore.lk</b></i></h2>
+            </hgroup>
+        </div>
+    </section>
+}
+
+<form method="post">
+    @AntiForgery.GetHtml()
+    @* If at least one validation error exists, notify the user *@
+    <fieldset>
+        <legend>Products Results </legend>
+        <div id="detailform"   @if (OrderRecords == null)
+                               {<text>style="display:none;"</text>}" >
+            <table class="table">
+                
+                <tr>
+                    <td>
+                        <label>
+                            <b>Order ID</b></label>
+                    </td>
+                    <td>
+                        <label for="ItemImage">
+                            <b>Customer Id</b>
+                        </label>
+                    </td>
+                    <td>
+                        <label for="ItemImage">
+                            <b>Order Date</b>
+                        </label>
+                    </td>
+                    <td>
+                        <label>
+                            <b>Required Date</b></label>
+                    </td>
+                    <td>
+                        <label>
+                            <b>Delivery Charge</b></label>
+                    </td>
+                         <td>
+                        <label>
+                            <b>Order Total (Base Currency)</b></label>
+                    </td>
+                    <td>
+                        <label>
+                            <b>Exchange Currency</b></label>
+                    </td>
+                    <td>
+                        <label>
+                            <b>Exchanged Total</b></label>
+                    </td>
+                   <td>
+                    </td>
+               
+
+                </tr>
+                </table>
+
+                @foreach (var item in OrderRecords)
+                { 
+                    <table>
+                    <tr>
+                         <td>
+                             <label id="ordID">@item.orderid </label>
+                        </td>
+                        <td>
+                            <label id="cusid">@item.cusid </label>
+                        </td>
+                        <td>
+                            <label id="orderdate">@item.orderdate</label>
+                        </td>
+                        <td>
+                            <label id="requireddate">@item.requireddate</label>
+                        </td>
+                        <td>
+                            <label id="deliveryCharge">@item.deliveryCharge</label>
+                        </td>
+                        
+                     
+                        <td>
+                            <label id="Total">@Math.Round(item.Total,2)</label>
+                        </td>
+                        <td>
+                            <label id="Currency">@item.exchangeCurrency</label>
+                        </td>
+                        <td>
+                            <label id="exTotal">@Math.Round(item.Total * item.exchangeRate, 2)</label>
+                        </td>
+                        
+                        <td>
+                            <input id="@item.orderid" onclick="DeleteOrderClick(this);" type="submit" name="@item.orderid" value="Delete this Order"  />
+                        </td>
+
+
+                    </tr>
+                  </table>
+                  <table>
+                    <tr>
+                         <td>
+                            <a id='@string.Concat("a_", item.orderid)' href="javascript:toggle(@item.orderid);"    onclick="ShowOrderProducts('@item.orderid', '@App.exRate', '@App.curSym')">Show Details</a>
+                              <div  id='@string.Concat("OD_DIV", item.orderid)' style="display: none" >
+                             </div>
+                         </td>
+                    </tr> 
+                  </table>     
+                }
+        </div>
+    </fieldset>
+    <ul>
+        <li><a href="../../HomePage">Home</a></li>
+        <li><a href="~/Admin/Admin">Admin</a></li>
+    </ul>
+</form>

@@ -1,0 +1,214 @@
+﻿@* Remove this section if you are using bundling *@
+@section Scripts {
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+}
+
+@{
+    Layout = "~/_SiteLayout.cshtml";
+    Page.Title = "Clothes";
+    dynamic ClotheRecord =null ;
+    var Price = "";
+    var quantity = "";
+    var Description = "";
+    var Itemname = "";
+    var size = "";
+    var clotheId = 0;
+    Database db;
+    var items = new List<SelectListItem>();
+    var i = 0;
+    var ms = new MemoryStream();
+  //  byte[] imgArray= null;
+    string imgArray = string.Empty;
+    Products prd = new Products();
+    
+    Validation.RequireField("ItemName", "You must specify the  Products name.");
+    Validation.RequireField("Price", "Price cannot be blank.");
+    Validation.RequireField("ItemImage", "Choose Item Image");
+    Validation.RequireField("Size", "Sizerequired ");
+
+     if (IsPost)
+     {
+         var detailForm = Request.Form["detailform"];
+         var updateDetail = Request.Form["UpdateDetail"];
+         var updateConfirm = Request.Form["UpdateConfirm"];
+
+  
+         if (!string.IsNullOrEmpty(Request.Form["DDLid"]))
+         {
+           Session.Add("clotheId", Request.Form["DDLid"]) ;
+         }
+
+         if (updateDetail != null && Session["clotheId"] != null)
+    {
+            clotheId = int.Parse(Session["clotheId"].ToString());
+         //   db = Database.Open("mensClothe");
+           
+            ClotheRecord = Products.getProductDetail(clotheId);
+            if(ClotheRecord != null)
+            {
+                Price = Convert.ToString( ClotheRecord["Price"]);
+                Description = Convert.ToString(ClotheRecord["Description"]);
+                quantity =Convert.ToString( ClotheRecord["QOH"]) ;
+                size = Convert.ToString(ClotheRecord["Size"]);
+                imgArray = ClotheRecord["ItemImage"];
+                Itemname = ClotheRecord["ItemName"];
+            } 
+    }
+    else if (updateConfirm != null && Session["clotheId"] != null)
+    {
+
+       //ItemName = Request.Form["ItemName"];
+       Price = Request.Form["Price"];
+       // ItemImage = Request.Form["ItemImage"];
+       quantity = Request.Form["quantity"];
+       size =Request.Form["size"];
+       Description = Request.Form["Description"];
+       Itemname = Request.Form["pname"];
+       HttpPostedFileBase file = Request.Files["ItemImage"];
+       if (file != null)
+       {
+           ms = new MemoryStream();
+           file.InputStream.CopyTo(ms);
+           // imgStream = ms.ToArray();
+       }
+
+     //  System.Drawing.Bitmap image = new System.Drawing.Bitmap(ms);
+    //   MemoryStream stream = new MemoryStream();
+    //   image.Save(stream, System.Drawing.Imaging.ImageFormat.Bmp);
+       var img = file.FileName;  //stream.ToArray();
+        
+       clotheId = int.Parse(Session["clotheId"].ToString());
+      // db = Database.Open("mensClothe");
+       i = Products.UpdateProduct(Itemname, Price, img, quantity, size, Description, clotheId);
+       if (i == 0)
+       {
+           string url = "~/ErrorPage?ErrorMessage=" + "Dabse Error Occured";
+           Response.Redirect(url);
+       }
+            
+    
+    }
+    
+    
+     }
+    
+            // Insert a new item into the database
+          //   db = Database.Open("mensClothe");
+
+            // Check if user already exists
+            List<Products> clotheRecords = Products.getProductRecodCollections();
+             if (clotheRecords != null)
+            {
+
+               items.Add(new SelectListItem { Text = "Select....", Value = "" });
+               foreach (var item in clotheRecords)
+               {
+
+                   items.Add(new SelectListItem { Text = item.name, Value = Convert.ToString( item.ItemID) });
+                   
+               }
+            
+            }
+    
+}
+
+<hgroup class="title">
+    <h1>@Page.Title.</h1>
+    <h2>Delete Products Item</h2>
+</hgroup>
+
+<form method="post"  enctype="multipart/form-data">
+    @AntiForgery.GetHtml()
+    @* If at least one validation error exists, notify the user *@
+    @Html.ValidationSummary("Adding Products was unsuccessful. Please correct the errors and try again.", excludeFieldErrors: true, htmlAttributes: null)
+
+    <fieldset>
+        <legend>Registration Form</legend>
+        <ol>
+
+            <li class="Clothes">
+                <label  >
+                    Select Products Item to be Deleted:
+                </label>
+                @Html.DropDownList("DDLid",    items)
+
+
+
+
+            </li>
+             
+        </ol>
+   
+    <div id="detailform"   @if(ClotheRecord == null)
+                           {<text>style="display:none;"</text>}">
+
+        <ol>    
+            
+           <li class="Price">
+                <label>
+                 Product Name</label>
+                <input type="text" id="pname" name="pname" value="@Itemname" ) />
+                @* Write any password validation errors to the page *@
+              
+            </li>
+                    
+
+            <li class="Price">
+                <label>
+                    Price</label>
+                <input type="text" id="Price" name="Price" value="@Price" ) />
+                @* Write any password validation errors to the page *@
+              
+            </li>
+            <li class="ItemImage">
+                <label for="ItemImage">
+                    Quantity</label>
+                <input type="text" id="quantity" name="quantity"  value="@quantity" />
+            </li>
+
+
+            <li class="ItemImage">
+                @if (imgArray!= null)
+                {
+                <label for="ItemImage">
+                    Image </label>
+                    <img src="@MensClothe.AspControlUtil.getFullImagePath( Convert.ToString(imgArray))" alt="Red dot" width="100" height="150">  
+                }
+             </li>
+             <li class="ItemImage">
+
+                 <label for="ItemImage">
+                 change   Image </label>
+                <label for="ItemImage" @if(!ModelState.IsValidField("ItemImage")) {<text>class="error-label"</text>}>Image of the Products</label>
+                <input type="file" id="ItemImage" name="ItemImage"  />
+                @* Write any password validation errors to the page *@
+              </li>
+
+           <li class="Size">
+                <label>
+                    Size</label>
+                <input type="text" id="size" name="size"  value="@size" />
+            </li>
+
+           
+            <li class="description">
+                <label>
+                    Description</label>
+                <input type="text" id="Desc" name="Description"  value="@Description" />
+            </li>
+            <li class="recaptcha"></li>
+        </ol>
+        <input type="submit" id="UpdateConfirm" name="UpdateConfirm" value="Confirm" />
+       </div>
+  </fieldset>
+    <p>
+    <input type="submit" id="UpdateDetail"  name="UpdateDetail" value="Update Products Item"  @if (ClotheRecord != null)
+                            {<text>style="display:none;"</text>}" />
+   </p>
+    <ul>
+        <li><a href="~/">Home</a></li>
+        <li><a href="~/Admin/Admin">Admin</a></li>
+        
+    </ul>
+</form>

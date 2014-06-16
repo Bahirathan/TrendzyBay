@@ -1,0 +1,145 @@
+﻿@* Remove this section if you are using bundling *@
+@section Scripts {
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+}
+
+@{
+    Layout = "~/_siteLayout.cshtml";
+    Page.Title = "Clothess";
+
+    // Initialize general page variables
+    var ItemName = "";
+    var Price = "";
+    var ItemImage = "";
+    var quantity = "";
+    var size = "";
+    var Description = "";
+    var ms = new MemoryStream();
+    Database Dbase = new DAL.DbConnection().db;
+
+
+
+    // Setup validation
+    Validation.RequireField("ItemName", "You must specify the  Clothes name.");
+    Validation.RequireField("Price", "Price cannot be blank.");
+    //Validation.RequireField("ItemImage", "Choose Item Image");
+    Validation.RequireField("Size", "Size required ");
+
+
+
+    if (IsPost)
+    {
+        AntiForgery.Validate();
+
+        HttpPostedFileBase file = Request.Files["ItemImage"];
+        if (file != null)
+        {
+            ms = new MemoryStream();
+            file.InputStream.CopyTo(ms);
+            // imgStream = ms.ToArray();
+        }
+
+
+        ItemName = Request.Form["ItemName"];
+        Price = Request.Form["Price"];
+        ItemImage = Request.Form["ItemImage"];
+
+        quantity = Request.Form["quantity"];
+        size = Request.Form["size"];
+        Description = Request.Form["Description"];
+
+        System.Drawing.Bitmap image = new System.Drawing.Bitmap(ms);
+        MemoryStream stream = new MemoryStream(16498);
+        image.Save(stream, System.Drawing.Imaging.ImageFormat.Bmp);
+        var img = file.FileName.ToString();  //stream.ToArray();
+
+
+        if (Validation.IsValid())
+        {
+
+
+            Products prd = new Products();
+            {
+                string url = "~/ErrorPage?ErrorMessage=" + "Dabse Error Occured";
+                Response.Redirect(url);
+            }
+
+        }
+    }
+}
+
+<hgroup class="title">
+    <h1>@Page.Title.</h1>
+    <h2>Add a new Products Item</h2>
+</hgroup>
+
+<form method="post" enctype="multipart/form-data">
+    @AntiForgery.GetHtml()
+    @* If at least one validation error exists, notify the user *@
+    @Html.ValidationSummary("Adding Products was unsuccessful. Please correct the errors and try again.", excludeFieldErrors: true, htmlAttributes: null)
+
+    <fieldset>
+        <legend>Registration Form</legend>
+        <ol>
+
+            <li class="Clothes">
+                <label for="Clothes" @if (!ModelState.IsValidField("ItemName"))
+                                     {<text>class="error-label"</text>}>
+                    Products Name
+                </label>
+                <input type="text" id="ItemName" name="ItemName" value="@ItemName" @Validation.For("ItemName") />
+                @* Write any email validation errors to the page *@
+                @Html.ValidationMessage("ItemName")
+            </li>
+            <li class="Price">
+                <label for="Price" @if (!ModelState.IsValidField("Price"))
+                                   {<text>class="error-label"</text>}>Unit Price</label>
+                <input type="text" id="Price" name="Price" @Validation.For("Price") />
+                @* Write any password validation errors to the page *@
+                @Html.ValidationMessage("Price")
+            </li>
+            <li class="ItemImage">
+                <label for="ItemImage" @if (!ModelState.IsValidField("ItemImage"))
+                                       {<text>class="error-label"</text>}>Image of the Products</label>
+                <input type="file" id="ItemImage" name="ItemImage" />
+                @* Write any password validation errors to the page *@
+            </li>
+            <li class="ItemImage">
+                <label for="ItemImage" @if (!ModelState.IsValidField("Quantity"))
+                                       {<text>class="error-label"</text>}>Enter the quantity</label>
+                <input type="text" id="quantity" name="quantity" @Validation.For("quantity") />
+                @* Write any password validation errors to the page *@
+                @Html.ValidationMessage("Quantity")
+            </li>
+            <li class="size">
+                <label for="Size" @if (!ModelState.IsValidField("Size"))
+                                  {<text>class="error-label"</text>}>Enter the Size </label>
+                <input type="text" id="Size" name="Size" @Validation.For("Size") />
+                @* Write any password validation errors to the page *@
+                @Html.ValidationMessage("Size")
+            </li>
+
+            <li class="description">
+                <label for="ItemImage" @if (!ModelState.IsValidField("Description"))
+                                       {<text>class="error-label"</text>}>Enter the Description</label>
+                <input type="text" id="Desc" name="Description" @Validation.For("Description") />
+                @* Write any password validation errors to the page *@
+                @Html.ValidationMessage("Description")
+            </li>
+
+            <li>
+                <label>Select the category  </label>
+                <select id="category" name="category">
+                    <option value="1">Clothes</option>
+                    <option value="2">Leather</option>
+                    <option value="3">Accessories</option>
+                    <option value="4">Cosmetics</option>
+                </select>
+                @Html.ValidationMessage("category")
+            </li>
+            <li class="recaptcha"></li>
+        </ol>
+        <input type="submit" value="Add Clothes" />
+    </fieldset>
+</form>

@@ -1,0 +1,106 @@
+﻿@* Remove this section if you are using bundling *@
+@section Scripts {
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script type="text/javascript">
+        
+    </script>
+}
+
+@{
+    Layout = "~/_siteLayout.cshtml";
+    Page.Title = "Remove Category";
+
+    //page variables
+    var catID = "";
+    var items = new List<SelectListItem>();
+    var i = 0;
+
+    if (IsPost)
+    {
+
+        var delConfirm = Request.Form["deleteConfirm"];
+
+        // Maintain the selected category id in the session
+        if (!string.IsNullOrEmpty(Request.Form["ddlcat"].ToString()) && delConfirm != null)
+        {
+            catID = Request.Form["ddlcat"].ToString();
+            i = DAL.Category.DeleteCategory(catID);
+        }
+    }
+    // Populate the dropdownlist
+    var catRecords = DAL.Category.getCategoryRecodCollections();
+    if (catRecords != null)
+    {
+
+        items.Add(new SelectListItem { Text = "Select....", Value = "" });
+        foreach (var item in catRecords)
+        {
+            items.Add(new SelectListItem { Text = item.categoryname, Value = Convert.ToString(item.categoryid) });
+        }
+    }
+   
+}
+
+@section featured {
+    <section class="featured">
+        <div class="content-wrapper">
+            <hgroup class="title">
+                <h1>@Page.Title.</h1>
+                 <h2><i><b>fashionstore.lk</b></i></h2>
+            </hgroup>
+        </div>
+    </section>
+}
+<form method="post">
+    @AntiForgery.GetHtml()
+    @Html.ValidationSummary("Adding Products was unsuccessful. Please correct the errors and try again.", excludeFieldErrors: true, htmlAttributes: null)
+
+    <fieldset>
+        <legend>Registration Form</legend>
+        <ol>
+
+            <li class="category">
+                <label>
+                    Select category to be Removed:
+                </label>
+                <select id="ddlcat" name="ddlcat" onchange="selectCategory(this);">
+                    @foreach (var item in items)
+                    {
+                        <option   value="@item.Value" >
+                            @item.Text
+                        </option>
+                    }
+                </select>
+            </li>
+        </ol>
+        <div id="detailform" style="display: none;">
+            <ol>
+                <li class="Category">
+                    <label for="CatID" @if (!ModelState.IsValidField("CatID"))
+                                       {<text>class="error-label"</text>}>
+                        Category ID
+                    </label>
+                    <input type="text" id="CatID" name="CatID" />
+                    @Html.ValidationMessage("CatID")
+                </li>
+                <li class="Price">
+                    <label>
+                        Category  Name</label>
+                    <input type="text" id="CategoryName" name="CategoryName" />
+                </li>
+                <li class="description">
+                    <label>
+                        Description</label>
+                    <input type="text" id="Description" name="Description" />
+                </li>
+                <li class="recaptcha"></li>
+            </ol>
+            <input type="submit" id="deleteConfirm" name="deleteConfirm" value="Confirm" />
+        </div>
+    </fieldset>
+    <ul>
+        <li><a href="~/Admin/Category/ViewCategory">View Category</a></li>
+       <li><a href="~/Admin/Admin">Admin Home</a></li>
+    </ul>
+</form>

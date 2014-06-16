@@ -1,0 +1,117 @@
+﻿@section Scripts {
+    <script src="~/Scripts/JavaScript-4.7.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+        });
+    </script>
+}
+@{
+    Page.Title = "ShoppingCart";
+    Layout = "~/_siteLayout.cshtml";
+    var SCart = (MensClothe.Cart)PageData["SCart"];
+
+   
+}
+
+@section featured {
+    <section class="featured">
+        <div class="content-wrapper">
+            <hgroup class="title">
+                <h1>@Page.Title.</h1>
+                <h2><i><b>fashionstore.lk</b></i></h2>
+            </hgroup>
+        </div>
+    </section>
+}
+
+<form method="post">
+    @AntiForgery.GetHtml()
+    @* If at least one validation error exists, notify the user *@
+    <fieldset>
+        <legend>Products Results </legend>
+        <div  id="ShoppingCart"   @if (SCart.Items.Count==0)
+                                  {<text>style="display:none;"</text>}   >
+            <table>
+                <tr>
+                    <td>
+                        <label>
+                            <b>Price</b></label>
+                    </td>
+                    <td>
+                        <label for="ItemImage">
+                            <b>Quantity</b>
+                        </label>
+                    </td>
+                    <td>
+                        <label for="ItemImage">
+                            <b>Image</b>
+                        </label>
+                    </td>
+                    <td>
+                        <label>
+                            <b>Description</b></label>
+                    </td>
+                    <td>
+                        <label>
+                            <b>SubTotal</b></label>
+                    </td>
+                </tr>
+                @foreach (var item in SCart.Items)
+                { 
+                    <tr>
+                        <td>
+                            <label id="Price">@AspControlUtil.formatPrice( item.Price ) </label>
+                        </td>
+                        <td>
+                            <label id="quantity">@item.Quantity </label>
+                        </td>
+                        <td>
+                            <img src="@AspControlUtil.getFullImagePath(Convert.ToString(item.ImageUrl))" alt="Red dot" width="100" height="150">
+                        </td>
+                        <td>
+                            <label id="Description">@item.ProductName</label>
+                        </td>
+                        <td>
+                            <label id="SubTotal">@AspControlUtil.formatPrice(item.SubTotal)</label>
+                        </td>
+                        <td>
+                            <input type="button"  id="@item.ProductID" onclick="removeCartItem(this); window.location=window.location;" name="remove"  value="Remove" />
+                        </td>
+                    </tr>
+                }
+                <tr>
+                    <td>
+                        <label>Total Order Amount </label>
+                    </td>
+                    <td>
+                        <label id="Total">@AspControlUtil.formatPrice(SCart.Total)</label></td>
+                </tr>
+                <tr>
+
+                    @if (SCart.Items.Count > 0)
+                    {
+                        <td>
+                            <input id="CheckOut" type="button" name="CheckOut" onclick="redirect2Payment();" value="Check Out" /></td>
+                    }
+                    <td>
+                        <input id="AddMore" type="button" name="AddMore" onclick="redirect2ProductList();" value="Add more Items" /></td>
+                </tr>
+
+            </table>
+
+        </div>
+        <div   @if (SCart.Items.Count>0)
+                                  {<text>style="display:none;"</text>}  >
+            <p><b>Your Shopping Cart is empty</b> </p>
+
+                 <input id="AddItems" type="button" name="AddItems" onclick="redirect2ProductList();" value="Add Items" />
+
+        </div>
+    </fieldset>
+    <ul>
+        <li><a href="~/HomePage">Home</a></li>
+        <li><a href="~/Products/ProductResults">Product List</a></li>
+    </ul>
+</form>
+

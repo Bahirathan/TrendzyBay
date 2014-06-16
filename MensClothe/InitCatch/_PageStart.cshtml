@@ -1,0 +1,19 @@
+﻿
+
+
+@{ 
+    Layout = "~/_siteLayout.cshtml";
+
+    ProfileCommon profile = HttpContext.Current.Profile as ProfileCommon;
+    PageData["CartCount"] = profile.SCart.Items.Count.ToString();
+    
+    //try 
+    //{ 
+    //    RunPage(); 
+    //} 
+    //catch (Exception ex) 
+    //{
+    //    Response.Redirect("~/ErrorPage.cshtml?source=" + 
+    //        HttpUtility.UrlEncode(Request.AppRelativeCurrentExecutionFilePath)); 
+    //} 
+}

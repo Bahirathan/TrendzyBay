@@ -1,0 +1,130 @@
+﻿@* Remove this section if you are using bundling *@
+@section Scripts {
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+      <script type="text/javascript">
+         
+    </script>
+}
+
+@{
+    Layout = "~/_siteLayout.cshtml";
+    Page.Title = "Remove Customer";
+
+    //Initialize page variables 
+    var cusid = 0;
+    var items = new List<SelectListItem>();
+    var i = 0;
+
+    
+    if (IsPost)
+    {
+        var detailForm = Request.Form["detailform"];
+        var delDetail = Request.Form["deleteDetail"];
+        var delConfirm = Request.Form["deleteConfirm"];
+
+
+        if (!string.IsNullOrEmpty(Request.Form["ddlcus"].ToString()) && delConfirm != null)
+        {
+            cusid = int.Parse(Request.Form["ddlcus"].ToString());
+            i = DAL.Customer.DeleteCustomer(cusid);
+
+        }
+    }
+  
+    // Check if user already exists
+    var user = DAL.Customer.getAllCustomers();
+
+    if (user != null)
+    {
+        items.Add(new SelectListItem { Text = "Select....", Value = "" });
+        foreach (var item in user)
+        {
+            items.Add(new SelectListItem { Text = item.customername, Value = Convert.ToString(item.CustomerID) });
+
+        }
+    }
+}
+
+<hgroup class="title">
+    <h1>@Page.Title.</h1>
+    <h2>Delete Products Item</h2>
+</hgroup>
+
+<form method="post">
+    @AntiForgery.GetHtml()
+   
+    <fieldset>
+        <legend>Registration Form</legend>
+        <ol>
+
+            <li class="Clothes">
+                <label>
+                    Select Customer to be Deleted:
+                </label>
+                 <select id="ddlcus" name="ddlcus" onchange="selectCustomer(this);">
+                    @foreach (var item in items)
+                    {
+                        <option   value="@item.Value" >
+                            @item.Text
+                        </option>
+                    }
+
+
+                </select>
+            </li>
+        </ol>
+
+         <div id="detailform"  style="display:none;">
+            <table>
+                <tr>
+                    <td>
+                        <label>
+                            Name:
+                        </label>
+                        <input type="text" id="txtName" name="txtName"  />
+                        <label for="txtAddress">
+                            Address:
+                        </label>
+                        <input type="text" id="txtAddress" name="txtAddress"    />
+
+                        <label for="txtCity">
+                            City:
+                        </label>
+                        <input type="text" id="txtCity" name="txtCity"    />
+
+                        <label for="txtState">
+                            State/Province:
+                        </label>
+                        <input type="text" id="txtState" name="txtState"   />
+                        &nbsp;&nbsp; 
+                       
+                         <label for="ZipCode">
+                             Zip/Postal Code:
+                         </label>
+                        <input type="text" id="txtZip" name="txtZip"  />
+
+                        <label>Country:</label>
+                        <input type="text" id="Country" name="txtZip"  />
+
+                        <label for="txtEmail">
+                            Email:
+                        </label>
+                        <input type="text" id="txtEmail" name="txtEmail"  />
+                        <label for="txtPhone">
+                            Phone:
+                        </label>
+                        <input type="text" id="txtPhone" name="txtPhone"  />
+                    </td>
+                    <td></td>
+                </tr>
+            </table>
+            <input type="submit" id="deleteConfirm" name="deleteConfirm" value="Confirm" />
+        </div>
+    </fieldset>
+    
+    <ul>
+        <li><a href="~/">Home</a></li>
+        <li><a href="~/Admin/Admin">Admin</a></li>
+    </ul>
+</form>

@@ -1,0 +1,90 @@
+﻿@* Remove this section if you are using bundling *@
+@section Scripts {
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+}
+
+@{
+    Layout = "~/_siteLayout.cshtml";
+    Page.Title = "Admin Category";
+
+    // Initialize general page variables
+    var CategoryName = "";
+    var Description = "";
+    int CategoryID =0;
+    // Setup validation
+    Validation.RequireField("CategoryName", "You must specify the  Category name.");
+    Validation.RequireField("Description", "Description cannot be blank.");
+    Validation.RequireField("CatID", "Category ID cannot be blank.");
+    
+    
+    if (IsPost)
+    {
+        AntiForgery.Validate();
+        CategoryID =int.Parse( Request.Form["CatID"].ToString());
+        CategoryName = Request.Form["CategoryName"];
+        Description = Request.Form["Description"];
+
+        if (Validation.IsValid())
+        {
+            int result = DAL.Category.insertCategory(CategoryName, Description, CategoryID);
+            if (result == 0)
+            {
+                string url = "~/ErrorPage?ErrorMessage=" + "Dabse Error Occured";
+                Response.Redirect(url);
+            }
+        }
+    }
+}
+
+<hgroup class="title">
+    <h1>@Page.Title.</h1>
+    <h2>Add a Category</h2>
+</hgroup>
+<form method="post" enctype="multipart/form-data">
+    @AntiForgery.GetHtml()
+    @* If at least one validation error exists, notify the user *@
+    @Html.ValidationSummary("Adding new Category was unsuccessful. Please correct the errors and try again.", excludeFieldErrors: true, htmlAttributes: null)
+
+    <fieldset>
+        <legend>Registration Form</legend>
+        <ol>
+
+             <li class="Category">
+                <label for="CatID" @if (!ModelState.IsValidField("CatID"))
+                                          {<text>class="error-label"</text>}>
+                    Category ID
+                </label>
+                <input type="text" id="CatID" name="CatID"  @Validation.For("CatID") />
+                  @Html.ValidationMessage("CatID")
+            </li>
+  
+
+
+            <li class="Category">
+                <label for="CategoryName" @if (!ModelState.IsValidField("CategoryName"))
+                                          {<text>class="error-label"</text>}>
+                    Category Name
+                </label>
+                <input type="text" id="CatName" name="CategoryName"  @Validation.For("CategoryName") />
+                @* Write any email validation errors to the page *@
+                @Html.ValidationMessage("CategoryName")
+            </li>
+            <li class="description">
+                <label for="ItemImage" @if (!ModelState.IsValidField("Description"))
+                                       {<text>class="error-label"</text>}>
+                    Enter the Description</label>
+                <input type="text" id="Desc" name="Description" @Validation.For("Description") />
+                @* Write any password validation errors to the page *@
+                @Html.ValidationMessage("Description")
+            </li>
+            <li class="recaptcha"></li>
+        </ol>
+        <input type="submit" value="Add Category" />
+    </fieldset>
+     <ul>
+        <li><a href="~/Admin/Category/ViewCategory">View Category</a></li>
+        <li><a href="~/Admin/Admin">Admin Home</a></li>
+    </ul>
+</form>
+

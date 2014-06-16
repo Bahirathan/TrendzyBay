@@ -1,0 +1,129 @@
+﻿
+
+
+
+
+
+<%: Html.RadioButton("Selected", item.Selected, new { onclick="btnSubmit_Click('" + Html.Encode(CustomerDetails) + "','" + @Html.Encode(carddetails) + "', '" + @Html.Encode(amount) + "','" + @Html.Encode(PayPalReturnRequest) + "' )"  } )%>
+
+  <!--<location path="Admin">
+    <system.web>
+      <authorization>
+        <allow users="rbahirathan@gmail.com"/>
+        <allow roles="Admin"/> --><!--Allows users in Admin role--><!--
+        <deny users="*"/>  --><!--deny everyone else--><!--
+      </authorization>
+    </system.web>
+  </location>-->
+  
+
+
+
+	<!--<system.web>
+		<authorization>
+			<allow users="?" />
+			<allow roles="admin" />
+		</authorization>
+		<roleManager enabled="true" />
+		<authentication mode="Forms" />
+	</system.web>-->
+
+
+
+	  <div id="detailform"   style="display:none;">
+            <ol>
+                <li>
+                    <label for="txtCompanyName">
+                        Company  Name:
+                   </label>
+                </li>
+                <li>
+                    <input type="text" id="txtCompanyName" name="txtCompanyName"  value="@SuppliersRecord.companyname"  />
+                </li>
+            </ol>
+
+            <ol>
+                <li>
+                    <label for="txtName">
+                        ContactName:
+                    </label>
+                </li>
+                <li>
+                    <input type="text" id="txtName" name="txtName"  value="@SuppliersRecord.contactname" />
+                </li>
+            </ol>
+            <ol>
+                <li>
+                    <label for="txtAddress">
+                        Address:
+                    </label>
+                </li>
+                <li>
+                    <input type="text" id="txtAddress" name="txtAddress"  value="@SuppliersRecord.address" />
+                </li>
+            </ol>
+            <ol>
+                <li>
+                    <label for="txtCity">
+                        City:
+                    </label>
+                </li>
+                <li>
+                    <input type="text" id="txtCity" name="txtCity" value="@SuppliersRecord.city"  />
+                </li>
+            </ol>
+            <ol>
+                <li>
+                    <label for="txtState">
+                        State/Province:
+                    </label>
+                </li>
+                <li>
+                    <input type="text" id="txtState" name="txtState" '@Validation.For("txtState")' value="@SuppliersRecord.region" />
+                    &nbsp;&nbsp; 
+                          @Html.ValidationMessage("txtState")
+                </li>
+            </ol>
+            <ol>
+                <li>
+                    <label for="txtZip">
+                        Zip/Postal Code:
+                    </label>
+                </li>
+                <li>
+                    <input type="text" id="txtZip" name="txtZip"  value="@SuppliersRecord.postalcode" />
+                </li>
+            </ol>
+            <ol>
+                <li>
+                    <label for="txtCountry">
+                        Country:
+                    </label>
+                </li>
+                <li>
+                    <input type="text" id="txtCountry" name="txtCountry"  value="@SuppliersRecord.country" />
+                </li>
+            </ol>
+            <ol>
+                <li>
+                    <label for="txtEmail">
+                        Email:
+                    </label>
+                </li>
+                <li>
+                    <input type="text" id="txtEmail" name="txtEmail"  value= "@SuppliersRecord.Email" />
+                </li>
+            </ol>
+            <ol>
+                <li>
+                    <label for="txtPhone">
+                        Phone:
+                    </label>
+                </li>
+                <li>
+                    <input type="text" id="txtPhone" name="txtPhone"    value="@SuppliersRecord.phone"  />
+
+                </li>
+            </ol>
+             <input type="submit" id="DeleteConfirm" name="DeleteConfirm" value="Confirm Delete" />
+        </div>

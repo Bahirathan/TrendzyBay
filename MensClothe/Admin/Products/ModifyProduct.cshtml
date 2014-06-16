@@ -1,0 +1,232 @@
+﻿
+
+@{
+    Layout = "~/_siteLayout.cshtml";
+    Page.Title = "Change Products";
+
+
+    //Initialize page variables 
+    var profit = 0;
+    var Price = "";
+    var quantity = "";
+    var imgurl = "";
+    var prdname = "";
+    var catid = "";
+    var suppid = "";
+    var discon = "";
+    var imageName = "";
+    var items = new List<SelectListItem>();
+    var SuppItems = new List<SelectListItem>();
+    var CatItems = new List<SelectListItem>();
+    var i = 0;
+    Products prd = new Products();
+
+    // Validation for page inputss
+
+    // Validation for product name
+    Validation.RequireField("pname", "You must specify the  Product name.");
+    Validation.Add("pname",
+        Validator.StringLength(
+            maxLength: Int32.MaxValue,
+            minLength: 2,
+            errorMessage: "product Name Cannot be empty"));
+
+    // Validation for product quantity 
+    Validation.RequireField("quantity", "Enter quantity.");
+    Validation.Add("quantity",
+    Validator.Integer(errorMessage: "quantity required"));
+
+    // Validation for product unit price 
+    Validation.RequireField("Price", "Enter Unit Price.");
+    Validation.Add("Price", Validator.Decimal(errorMessage: "Unit Price cannot be empty."));
+
+    Validation.RequireField("profitmargin", "Enter profit margin .");
+    Validation.Add("profitmargin",
+        Validator.Decimal(errorMessage: "Unit Price cannot be empty."),
+        Validator.Range(0, 100, "must be between 0 and 100..."));
+
+
+
+    List<Products> productRecords = Products.getProductModifyCollections();
+    if (productRecords != null)
+    {
+        items.Add(new SelectListItem { Text = "None", Value = "0" });
+        foreach (var item in productRecords)
+        {
+            items.Add(new SelectListItem { Text = item.name, Value = Convert.ToString(item.ItemID) });
+        }
+    }
+
+
+    // populate supplier for modification 
+
+    List<DAL.Suppliers> SuppliersRecords = DAL.Suppliers.getAllSuppliers();
+    if (SuppliersRecords != null)
+    {
+        SuppItems.Add(new SelectListItem { Text = "NONE", Value = "0" });
+        foreach (var item in SuppliersRecords)
+        {
+            SuppItems.Add(new SelectListItem { Text = item.companyname, Value = Convert.ToString(item.supplierid) });
+        }
+    }
+    
+    // populate category list for modification 
+    List<DAL.Category> CatRecords = DAL.Category.getCategoryRecodCollections();
+    if (SuppliersRecords != null)
+    {
+        CatItems.Add(new SelectListItem { Text = "NONE", Value = "0" });
+        foreach (var item in CatRecords)
+        {
+            CatItems.Add(new SelectListItem { Text = item.categoryname, Value = Convert.ToString(item.categoryid) });
+        }
+    }
+
+    if (IsPost)
+    {
+        var updateConfirm = Request.Form["UpdateConfirm"].ToString();
+        
+        if ( !string.IsNullOrEmpty( updateConfirm ) && Request.Form["ddlprd"] != null   && Validation.IsValid() )
+        {
+            var productID = int.Parse(Request.Form["ddlprd"].ToString());
+            Price = Request.Form["Price"];
+            discon = Request.Form["discontinued"];
+            quantity = Request.Form["quantity"];
+            catid = Request.Form["ddlCat"];
+            suppid = Request.Form["ddlSupp"];
+            prdname = Request.Form["pname"];
+            profit = int.Parse(Request.Form["profitmargin"].ToString());
+            HttpPostedFileBase file = Request.Files["ItemImage"];
+
+            if(discon == null)
+            {
+                discon = "0";
+            }
+            else if (discon != null && discon == "on")
+            {
+                discon = "1";
+            }
+            
+            if(!string.IsNullOrEmpty(file.FileName))
+            {
+            imageName = file.FileName;
+            }
+            else
+            {
+            imageName = Request.Form["HiddenImg"].ToString();
+            }
+            var img = imageName.Substring(file.FileName.LastIndexOfAny(new[] { '/', '\\' }) + 1).Split('/').Last(); //stream.ToArray();
+
+            i = Products.UpdateProduct(prdname, Price, img, quantity, catid, suppid, discon, productID, profit);
+            if (i == 0)
+            {
+                string url = "~/ErrorPage?ErrorMessage=" + "Dabse Error Occured";
+                Response.Redirect(url);
+            }
+        }
+    }
+}
+
+@section featured {
+    <section class="featured">
+        <div class="content-wrapper">
+            <hgroup class="title">
+                <h1>@Page.Title.</h1>
+                <h2><i><b>fashionstore.lk</b></i></h2>
+            </hgroup>
+        </div>
+    </section>
+}
+
+<form method="post" enctype="multipart/form-data">
+   
+    @AntiForgery.GetHtml()
+    @Html.ValidationSummary("Adding Products was unsuccessful. Please correct the errors and try again.", excludeFieldErrors: true, htmlAttributes: null)
+    <fieldset>
+        <legend>Registration Form</legend>
+        <ol>
+            <li class="Clothes">
+                <label>
+                    Select the Product to change:
+                </label>
+                 <select id="ddlprd" name="ddlprd" onchange="selectProduct(this);">
+                    @foreach (var item in items)
+                    {
+                        <option   value="@item.Value" >
+                            @item.Text
+                        </option>
+                    }
+                </select>
+            </li>
+        </ol>
+        <div id="detailform"  style="display:none;">
+            <ol>
+                <li class="Price">
+                    <label>
+                        Product Name</label>
+                    <input type="text" id="pname" name="pname" />
+                </li>
+                <li class="Price">
+                    <label>
+                        Price</label>
+                    <input type="text" id="Price" name="Price" />
+                </li>
+                <li class="quantity">
+                    <label for="quantity">
+                        Quantity</label>
+                    <input type="text" id="quantity" name="quantity"  />
+                </li>
+
+               <li >
+                <label for="profitmargin" >
+                    Profit margin</label>
+                <input type="text" id="Profitmargin" name="Profitmargin" /> <label>%</label>
+               </li>
+
+
+
+
+
+                <li class="ItemImage">
+                    @if (imgurl != null)
+                    {
+                        <label for="ItemImage">
+                            Image
+                        </label>
+                        <img id="img" src="#"  alt="Red dot" width="100" height="150">  
+                    }
+                </li>
+                <li class="Image">
+                    <label for="ItemImage">
+                        change   Image
+                    </label>
+                    <label for="ItemImage" @if (!ModelState.IsValidField("ItemImage"))
+                                           {<text>class="error-label"</text>}>
+                        Image of the Products</label>
+                    <input type="file" id="ItemImage"  name="ItemImage"  onchange="readURL(this);" />
+                    <input type="hidden" id="HiddenImg" name="HiddenImg" />
+                </li>
+                <li>
+                    <label>Category  </label>
+                    @Html.DropDownList("ddlCat", @CatItems, @CatItems[0])
+                </li>
+                <li class="supplierid">
+                    <label for="supplierid" '@if (!ModelState.IsValidField("supplierid"))
+                                             {<text>  class="error-label"</text>}'>
+                        Choose Supplier</label>
+                    @Html.DropDownList("ddlSupp", @SuppItems, @SuppItems[0])
+                </li>
+                <li>
+                    <label>Check whether discontinued or not ?</label>
+                    <input type="checkbox" id="discontinued"  name="discontinued" />
+                </li>
+                <li class="recaptcha"></li>
+            </ol>
+            <input type="submit" id="UpdateConfirm" name="UpdateConfirm" value="Confirm" />
+        </div>
+    </fieldset>
+    <ul>
+        <li><a href="../../HomePage">Home</a></li>
+        <li><a href="../Admin">Admin</a></li>
+
+    </ul>
+</form>

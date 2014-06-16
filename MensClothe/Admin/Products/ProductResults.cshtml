@@ -1,0 +1,193 @@
+﻿@using System.Globalization;
+@using System.Collections.Generic;
+@using CurrencyUtility;
+@using Zayko.Finance;
+@section Scripts {
+    <script src="~/Scripts/JavaScript-4.7.js"></script>
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+
+        });
+
+
+
+    </script>
+}
+
+
+
+
+@{
+    Layout = "~/_siteLayout.cshtml";
+    Page.Title = "Products";
+    List<Products> ProductRecords = new List<Products>();
+    var curList = new List<SelectListItem>();
+    var rInfoList = CurrencyTools.map;
+    int category = 0;
+    double exRate = 0.00;
+    string currency = "";
+
+
+
+    if (Request.QueryString["cat"] != null)
+    {
+        category = int.Parse(Request.QueryString["cat"]);
+        ProductRecords = Products.getCategoryWiseProducts(category);
+    }
+    else
+    {
+        var items = new List<Products>();
+        ProductRecords = Products.getProductRecodCollections();
+    }
+
+    
+  //  if (Session["exRate"] == null || Session["curSym"] == null)
+   // {
+        exRate = App.exRate;
+        currency = App.curSym;
+    //}
+    //else
+    //{
+    //    exRate = (double)Session["exRate"];
+    //    currency = (string)Session["curSym"];
+    //}
+    
+    //if (IsPost)
+    //{
+    //    string ISOcurSymbol = Request.Form["ddlCUR"].ToString();
+    //    CurrencyConverter myCurrencyConverter = new CurrencyConverter();
+    //    IList<CurrencyData> currencyList = new List<CurrencyData>();
+    //    currencyList.Add(new CurrencyData("LKR", ISOcurSymbol));
+
+    //    try
+    //    {
+    //        myCurrencyConverter.GetCurrencyData(ref currencyList);
+
+    //         exRate = currencyList[0].Rate;
+
+    //    }
+    //    catch
+    //    {
+    //        // Catch an exception
+    //    }
+
+    //}
+
+   
+
+   
+}
+
+
+
+@section featured {
+    <section class="featured">
+        <div class="content-wrapper">
+            <hgroup class="title">
+                <h1>@Page.Title.</h1>
+                <h2><i><b>fashionstore.lk</b></i></h2>
+            </hgroup>
+        </div>
+    </section>
+}
+<form method="post">
+
+    @AntiForgery.GetHtml()
+    @* If at least one validation error exists, notify the user *@
+
+    <fieldset>
+
+        <legend>Products Results </legend>
+
+      @*  <ol>
+            <li class="Clothes">
+                <label>
+                    Select your currecy:
+                </label>
+                <select id="ddlprd" name="ddlCUR" onchange="selectProduct(this);">
+                    @foreach (var item in curList)
+                    {
+                        <option   value="@item.Value" >
+                            @item.Text
+                        </option>
+                    }
+                </select>
+            </li>
+        </ol>*@
+
+
+        <div id="detailform"   @if (ProductRecords == null)
+                               {<text>style="display:none;"</text>}">
+            @*   <input id="prdID" name="prdID" type="hidden" />*@
+            <table>
+                <tr>
+
+                    <td>
+                        <label>
+                            <b>Item</b></label>
+                    </td>
+
+
+                    <td>
+                        <label>
+                            <b>Price</b></label>
+                    </td>
+
+                    <td>
+                        <label for="ItemImage">
+                            <b>Quantity</b>
+                        </label>
+
+                    </td>
+
+                    <td>
+                        <label for="ItemImage">
+                            <b>Image</b>
+                        </label>
+                    </td>
+
+                    <td>
+                        <label>
+                            <b>Size</b></label>
+                    </td>
+                    <td>
+                        <label>
+                            <b>Description</b></label>
+                    </td>
+
+                </tr>
+                @foreach (var item in ProductRecords)
+                { 
+                    <tr>
+                        <td>
+                            <label id="item">@item.name</label>
+                        </td>
+                        <td>
+                            <label id="Price">@AspControlUtil.formatPrice(Convert.ToDouble(item.price) ) </label>
+                        </td>
+                        <td>
+
+                            <label id="quantity">@item.quantity </label>
+                        </td>
+                        <td>
+                            <img src="@AspControlUtil.getFullImagePath(Convert.ToString(item.img))" alt="Red dot" width="100" height="150" />
+                            @*  <img src="data:image/*;base64,@Convert.ToBase64String(item.img)" alt="Red dot" width="100" height="150">*@
+                        </td>
+                        <td>
+                            <label id="size">@item.categoryID</label>
+                        </td>
+                        <td>
+                            <label id="Desc">@item.Description</label>
+                        </td>
+                    </tr>
+                }
+            </table>
+
+        </div>
+    </fieldset>
+    <ul>
+        <li><a href="../../HomePage">Home</a></li>
+        <li><a href="../Admin">Admin</a></li>
+    </ul>
+</form>

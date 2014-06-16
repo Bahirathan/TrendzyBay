@@ -1,0 +1,126 @@
+﻿@using DAL;
+@* Remove this section if you are using bundling *@
+@section Scripts {
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script type="text/javascript">
+      
+    </script>
+
+}
+
+@{
+    Layout = "~/_siteLayout.cshtml";
+    Page.Title = "Change Category";
+
+    //page variables 
+    var Description = "";
+    var CategoryName = "";
+    var categoryid = 0;
+    var newCategoryID = 0;
+    var items = new List<SelectListItem>();
+    var i = 0;
+
+    //validation for input fields
+    Validation.RequireField("CategoryName", "You must specify the  Category name.");
+
+    if (IsPost)
+    {
+        // Form's post values
+        var detailForm = Request.Form["detailform"];
+        var updateDetail = Request.Form["UpdateDetail"];
+        var updateConfirm = Request.Form["UpdateConfirm"];
+
+        if (!string.IsNullOrEmpty(Request.Form["ddlcat"]))
+        {
+           
+            categoryid = int.Parse(Request.Form["ddlcat"].ToString());
+            newCategoryID = int.Parse(Request.Form["CatID"].ToString());
+            Description = Request.Form["Description"];
+            CategoryName = Request.Form["categoryname"];
+
+            i = Category.UpdateCategory(CategoryName, Description, newCategoryID, categoryid);
+            if (i == 0)
+            {
+                string url = "~/ErrorPage?ErrorMessage=" + "Dabse Error Occured";
+                Response.Redirect(url);
+            }
+
+        }
+    }
+
+    List<Category> CategoryRecords = Category.getCategoryRecodCollections();
+    if (CategoryRecords != null)
+    {
+        items.Add(new SelectListItem { Text = "Select....", Value = "" });
+        foreach (var item in CategoryRecords)
+        {
+            items.Add(new SelectListItem { Text = item.categoryname, Value = Convert.ToString(item.categoryid) });
+        }
+    }
+
+    
+}
+@section featured {
+    <section class="featured">
+        <div class="content-wrapper">
+            <hgroup class="title">
+                <h1>@Page.Title.</h1>
+                 <h2><i><b>fashionstore.lk</b></i></h2>
+            </hgroup>
+        </div>
+ </section>
+}<form method="post" enctype="multipart/form-data">
+    @AntiForgery.GetHtml()
+    @Html.ValidationSummary("Adding Products was unsuccessful. Please correct the errors and try again.", excludeFieldErrors: true, htmlAttributes: null)
+
+    <fieldset>
+        <legend>Update Category</legend>
+        <ol>
+            <li>
+                 <label>
+                    Select category to be Updated:
+                </label>
+                <select id="ddlcat" name="ddlcat" onchange="selectCategory(this);">
+                    @foreach (var item in items)
+                    {
+                        <option   value="@item.Value" >
+                            @item.Text
+                        </option>
+                    }
+
+
+                </select>
+            </li>
+        </ol>
+        <div id="detailform" style="display: none;">
+            <ol>
+                <li class="Category">
+                    <label for="CatID" @if (!ModelState.IsValidField("CatID"))
+                                       {<text>class="error-label"</text>}>
+                        Category ID
+                    </label>
+                    <input type="text" id="CatID" name="CatID"  @Validation.For("CatID")  value="@categoryid" />
+                    @Html.ValidationMessage("CatID")
+                </li>
+
+                <li class="catname">
+                    <label>
+                        Cateogory Name</label>
+                    <input type="text" id="CategoryName" name="CategoryName" />
+                </li>
+                <li class="description">
+                    <label>
+                        Description</label>
+                    <input type="text" id="Description" name="Description" />
+                </li>
+                <li class="recaptcha"></li>
+            </ol>
+            <input type="submit" id="UpdateConfirm" name="UpdateConfirm" value="Confirm" />
+        </div>
+    </fieldset>
+    <ul>
+        <li><a href="~/Admin/Category/ViewCategory">View Category</a></li>
+        <li><a href="~/Admin/Admin">Admin Home</a></li>
+    </ul>
+</form>
